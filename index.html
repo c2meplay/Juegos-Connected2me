@@ -56,53 +56,45 @@
 </div>
   
 <style>
-  /* Imagen de fondo con overlay para la pantalla de inicio */
   #start-screen {
-    position: relative;
-    background-image: url('fondo.jpg'); /* Asegúrate de que 'fondo.jpg' esté en tu carpeta */
+    background-image: url('fondo.jpg'); /* Tu fondo */
     background-size: cover;
     background-position: center;
     min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 40px;
     text-align: center;
-    color: white;
-    overflow: hidden;
   }
 
-  #start-screen .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4); /* Capa oscura encima del fondo */
-    z-index: 0;
+  .start-box {
+    background-color: rgba(255, 255, 255, 0.6); /* Transparente gris-blanco */
+    padding: 30px 40px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
   }
 
-  #start-screen h2,
-  #start-screen p,
-  #start-screen input,
-  #start-screen button {
-    position: relative;
-    z-index: 1; /* Asegura que el contenido esté encima del overlay */
-  }
-
-  input, button {
+  input[type="text"] {
     padding: 10px;
-    margin-top: 10px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    width: 80%;
+    margin-bottom: 10px;
   }
 
   button {
+    padding: 10px 20px;
     background-color: #7E57C2;
     color: white;
+    border: none;
+    border-radius: 10px;
     cursor: pointer;
   }
 
   button:hover {
-    background-color: #5E35B1;
+    background-color: #6A4BB1;
   }
 </style>
 
