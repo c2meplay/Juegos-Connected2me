@@ -16,7 +16,7 @@
     .point {
       width: 25px;
       height: 25px;
-      background-color: rgba(255, 0, 0, 0.5);
+      background-color: rgba(255, 0, 0, 0);
       border-radius: 50%;
       position: absolute;
       cursor: pointer;
@@ -101,7 +101,7 @@
       p.onclick = function () {
         if (!p.classList.contains("found")) {
           p.classList.add("found");
-          p.style.backgroundColor = "rgba(0,255,0,0)";
+          p.style.backgroundColor = "rgba(0,255,0,0.5)";
           found++;
           if (found === totalPoints) {
             endGame(true);
