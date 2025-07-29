@@ -77,27 +77,34 @@
   display: flex;
   flex-direction: column; /* Asegura que los elementos estén uno debajo del otro */
   align-items: center;
-  background-color: rgba(128, 128, 128, 0.6); /* gris semi-transparente */
+  background-color: rgba(128, 128, 128, 0.2); /* gris semi-transparente */
   padding: 40px;
   border-radius: 20px;
   backdrop-filter: blur(4px); /* efecto borroso suave */
   z-index: 1;
 }
 
-input, button {
+input {
   padding: 10px;
   margin-top: 10px;
   font-size: 16px;
   border-radius: 8px;
   border: none;
   width: 100%;
-  max-width: 300px;
+  max-width: 300px; /* ancho amplio para el campo de nombre */
 }
 
 button {
+  padding: 10px 20px; /* menos espacio horizontal */
+  margin-top: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
   background-color: #7E57C2;
   color: white;
   cursor: pointer;
+  width: auto; /* se ajusta al contenido */
+  max-width: none; /* evita que se limite a 300px */
 }
 
 button:hover {
