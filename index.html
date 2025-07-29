@@ -20,11 +20,24 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: flex-start; /* alinea arriba */
-      padding-top: 280px; /* empuja el contenido hacia abajo */
+      align-items: flex-start;
       text-align: center;
       color: black;
       overflow: hidden;
+    }
+
+    .start-wrapper {
+      padding-top: 310px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #main-title {
+      font-family: 'Times New Roman', serif;
+      font-size: 52px;
+      color: #483D8B;
+      margin-bottom: 30px; /* separación del cuadro */
     }
 
     .content-box {
@@ -89,42 +102,58 @@
       font-size: 24px;
       margin: 10px;
     }
+
     h2 {
-  font-size: 30px;
-  font-weight: bold;
+      font-size: 30px;
+      font-weight: bold;
     }
-    #main-title {
-  position: absolute;
-  top: 150px;
-  width: 100%;
-  text-align: center;
-  font-family: 'Times New Roman', serif;
-  font-size: 52px;
-  color: #483D8B;
-  z-index: 2;
+
+    .content-box p:nth-of-type(1),
+    .content-box p:nth-of-type(2) {
+      margin: 6px 0;
+      color: #1a1a1a;
+      font-weight: 500;
     }
-.content-box p:nth-of-type(1),
-.content-box p:nth-of-type(2) {
-  margin: 6px 0;
-  color: #1a1a1a; /* negro más intenso */
-  font-weight: 500; /* un poco más grueso */
+
+    .content-box p:nth-of-type(3) {
+      margin-bottom: 2px;
+    }
+    @keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.content-box p:nth-of-type(3) {
-  margin-bottom: 2px;
+
+#main-title {
+  animation: fadeInUp 1s ease forwards;
+}
+
+.content-box {
+  animation: fadeInUp 1.5s ease forwards;
 }
   </style>
 </head>
 <body>
 
 <div id="start-screen">
-  <h1 id="main-title">Connected2me</h1>
-  <div class="content-box">
-    <h2 style="color:#401268;">¡Encuentra los 15 fantasmas!</h2>
-    <p>Haz click sobre cada fantasma para acumular puntos.</p>
-    <p>Tienes solo 3 minutos para encontrarlos. ¡Suerte!</p>
-    <p>Ingresa tu nombre para comenzar:</p>
-    <input type="text" id="playerName" placeholder="Sara López">
-    <button onclick="startGame()">Comenzar</button>
+  <div class="start-wrapper">
+    <!-- 🟣 TÍTULO FUERA DEL CUADRO TRANSPARENTE -->
+    <h1 id="main-title">Connected2me</h1>
+
+    <!-- 🟪 CUADRO TRANSPARENTE -->
+    <div class="content-box">
+      <h2 style="color:#401268;">¡Encuentra los 15 fantasmas!</h2>
+      <p>Haz click sobre cada fantasma para acumular puntos.</p>
+      <p>Tienes solo 3 minutos para encontrarlos. ¡Suerte!</p>
+      <p>Ingresa tu nombre para comenzar:</p>
+      <input type="text" id="playerName" placeholder="Sara López">
+      <button onclick="startGame()">Comenzar</button>
+    </div>
   </div>
 </div>
 
@@ -139,7 +168,6 @@
 
 </body>
 </html>
-
   
 <script>
   let time = 180;
