@@ -4,15 +4,72 @@
   <meta charset="UTF-8">
   <title>Juego: Encuentra los puntos</title>
   <style>
-    body {
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
       text-align: center;
       font-family: Arial, sans-serif;
-      background-color: #fdfdfd;
     }
+
+    #start-screen {
+      position: relative;
+      background-image: url('fondo.jpg');
+      background-size: cover;
+      background-position: center;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start; /* alinea arriba */
+      padding-top: 280px; /* empuja el contenido hacia abajo */
+      text-align: center;
+      color: black;
+      overflow: hidden;
+    }
+
+    .content-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: rgba(128, 128, 128, 0.2);
+      padding: 40px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+      z-index: 1;
+    }
+
+    input {
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background-color: #7E57C2;
+      color: white;
+      cursor: pointer;
+      width: auto;
+      max-width: none;
+    }
+
+    button:hover {
+      background-color: #5E35B1;
+    }
+
     #game-container {
       position: relative;
       display: inline-block;
     }
+
     .point {
       width: 25px;
       height: 25px;
@@ -21,14 +78,13 @@
       position: absolute;
       cursor: pointer;
     }
+
     #overlay {
       position: absolute;
       top: 0;
       left: 0;
     }
-    #start-screen {
-      margin-top: 280px;
-    }
+
     #timer {
       font-size: 24px;
       margin: 10px;
@@ -57,60 +113,9 @@
   </div>
 </div>
 
-<style>
-#start-screen {
-  position: relative;
-  background-image: url('fondo.jpg');
-  background-size: cover;
-  background-position: center;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px;
-  text-align: center;
-  color: black;
-  overflow: hidden;
-}
+</body>
+</html>
 
-.content-box {
-  display: flex;
-  flex-direction: column; /* Asegura que los elementos estén uno debajo del otro */
-  align-items: center;
-  background-color: rgba(128, 128, 128, 0.2); /* gris semi-transparente */
-  padding: 40px;
-  border-radius: 20px;
-  backdrop-filter: blur(4px); /* efecto borroso suave */
-  z-index: 1;
-}
-
-input {
-  padding: 10px;
-  margin-top: 10px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: none;
-  width: 100%;
-  max-width: 300px; /* ancho amplio para el campo de nombre */
-}
-
-button {
-  padding: 10px 20px; /* menos espacio horizontal */
-  margin-top: 10px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: none;
-  background-color: #7E57C2;
-  color: white;
-  cursor: pointer;
-  width: auto; /* se ajusta al contenido */
-  max-width: none; /* evita que se limite a 300px */
-}
-
-button:hover {
-  background-color: #5E35B1;
-}
-</style>
   
 <script>
   let time = 180;
