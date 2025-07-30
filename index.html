@@ -13,10 +13,11 @@
       height: 100%;
       font-family: Arial, sans-serif;
       background-color: #f4f0fa;
-      background-image: url('fondo.png');
+      background-image: url('fondo.png'); /* Asegúrate que esté en tu carpeta */
       background-size: cover;
-      background-position: center;
+      background-position: top center;
       background-repeat: no-repeat;
+      background-attachment: fixed; /* ✅ Corrige el fondo cortado en scroll */
     }
 
     .container {
@@ -53,10 +54,10 @@
     }
 
     .card h3 {
-      font-family: 'Quicksand', sans-serif; /* ✅ Fuente redondeada */
+      font-family: 'Quicksand', sans-serif;
       font-size: 24px;
       color: #401268;
-      margin: 10px 0; /* ✅ margen superior e inferior reducido */
+      margin: 10px 0;
     }
 
     .card a button {
@@ -83,19 +84,21 @@
         transform: translateY(0);
       }
     }
+
     .logo {
-  display: block;
-  margin: 100px auto 20px; /* arriba-centro-abajo */
-  width: 350px;
-  max-width: 90%;
-  height: auto;
-  animation: fadeInUp 1s ease forwards;
+      display: block;
+      margin: 60px auto 30px; /* Menor espacio arriba */
+      width: 350px;
+      max-width: 90%;
+      height: auto;
+      animation: fadeInUp 1s ease forwards;
     }
   </style>
 </head>
 <body>
 
-  <img src="besedoplay.png" alt="BESEDOPLAY" class="logo">
+  <!-- ✅ Logo en PNG reemplaza al texto Connected2me -->
+  <img class="logo" src="besedoplay.png" alt="Besedoplay">
 
   <div class="container">
     <div class="card">
