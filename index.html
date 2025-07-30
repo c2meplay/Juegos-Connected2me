@@ -3,17 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <title>Connected2me - Juegos</title>
+
+  <!-- ✅ Fuente redondeada desde Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%; /* ✅ asegura que el fondo cubra toda la altura */
+      height: 100%;
       font-family: Arial, sans-serif;
       background-color: #f4f0fa;
       background-image: url('fondo.jpg');
       background-size: cover;
       background-position: center;
-      background-repeat: no-repeat; /* ✅ evita cortes visuales por repetición */
+      background-repeat: no-repeat;
     }
 
     h1 {
@@ -22,7 +26,7 @@
       font-size: 52px;
       color: #483D8B;
       margin: 0;
-      padding-top: 200px; /* ✅ en lugar de margin-top, para evitar cortes */
+      padding-top: 200px;
       animation: fadeInUp 1s ease forwards;
     }
 
@@ -51,18 +55,19 @@
     }
 
     .card img {
-      width: 200px;            /* Tamaño más grande */
+      width: 200px;
       height: auto;
-      border-radius: 20px;     /* Puntas redondeadas */
+      border-radius: 20px;
       margin-bottom: 2px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Sombra suave opcional */
-      object-fit: contain;     /* Asegura que la imagen no se distorsione */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      object-fit: contain;
     }
 
     .card h3 {
+      font-family: 'Quicksand', sans-serif; /* ✅ Fuente redondeada */
       font-size: 24px;
       color: #401268;
-      margin-bottom: 5px;
+      margin: 5px 0; /* ✅ margen superior e inferior reducido */
     }
 
     .card a button {
