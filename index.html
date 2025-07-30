@@ -7,12 +7,13 @@
     html, body {
       margin: 0;
       padding: 0;
+      height: 100%; /* ✅ asegura que el fondo cubra toda la altura */
       font-family: Arial, sans-serif;
       background-color: #f4f0fa;
       background-image: url('fondo.jpg');
       background-size: cover;
       background-position: center;
-      min-height: 100vh;
+      background-repeat: no-repeat; /* ✅ evita cortes visuales por repetición */
     }
 
     h1 {
@@ -20,7 +21,8 @@
       font-family: 'Times New Roman', serif;
       font-size: 52px;
       color: #483D8B;
-      margin-top: 60px;
+      margin: 0;
+      padding-top: 60px; /* ✅ en lugar de margin-top, para evitar cortes */
       animation: fadeInUp 1s ease forwards;
     }
 
