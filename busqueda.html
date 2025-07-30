@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Búsqueda – Connected2me</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background-image: url('fondo.jpg');
+      background-size: cover;
+      background-position: center;
+    }
+
+    #start-screen {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 310px;
+      text-align: center;
+      color: black;
+    }
+
+    .start-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeInUp 1s ease forwards;
+    }
+
+    #main-title {
+      font-family: 'Times New Roman', serif;
+      font-size: 52px;
+      color: #483D8B;
+      margin-bottom: 30px;
+    }
+
+    .content-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: rgba(64, 18, 104, 0.15);
+      padding: 40px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+      z-index: 1;
+      animation: fadeInUp 1.5s ease forwards;
+    }
+
+    h2 {
+      font-size: 30px;
+      font-weight: bold;
+      color: #401268;
+    }
+
+    .content-box p:nth-of-type(1),
+    .content-box p:nth-of-type(2) {
+      margin: 6px 0;
+      color: #1a1a1a;
+      font-weight: 500;
+    }
+
+    .content-box p:nth-of-type(3) {
+      margin-bottom: 2px;
+    }
+
+    input {
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      font-size: 18px;
+      border-radius: 8px;
+      border: none;
+      background-color: #483D8B;
+      color: white;
+      cursor: pointer;
+      width: auto;
+    }
+
+    button:hover {
+      background-color: #5E35B1;
+    }
+
+    #game {
+      display: none;
+      padding: 30px;
+      color: #401268;
+      font-weight: bold;
+    }
+
+    #game-container {
+      position: relative;
+      display: inline-block;
+      margin-top: 20px;
+    }
+
+    .point {
+      width: 25px;
+      height: 25px;
+      background-color: rgba(255, 0, 0, 1);
+      border-radius: 50%;
+      position: absolute;
+      cursor: pointer;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #timer {
+      font-size: 24px;
+      margin: 10px;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="start-screen">
+  <div class="start-wrapper">
+    <h1 id="main-title">Connected2me</h1>
+    <div class="content-box">
+      <h2>¡Encuentra los 15 fantasmas!</h2>
+      <p>Haz click sobre cada fantasma para acumular puntos.</p>
+      <p>Tienes solo 3 minutos para encontrarlos. ¡Suerte!</p>
+      <p>Ingresa tu nombre para comenzar:</p>
+      <input type="text" id="playerName" placeholder="Sara López">
+      <button onclick="startGame()">Comenzar</button>
+    </div>
+  </div>
+</div>
+
+<div id="game">
+  <h3 id="player"></h3>
+  <div id="timer">Tiempo restante: 3:00</div>
+  <div id="game-container">
+    <img src="juego.png" id="background" style="max-width: 100%; height: auto;">
+    <div id="overlay"></div>
+  </div>
+</div>
+
+<script>
+  let time = 180;
+  let timerInterval;
+  let found = 0;
+  const totalPoints = 15;
+
+  const points = [
+    [350, 32], [45, 105], [102, 123], [30, 455], [115, 920],
+    [130, 575], [148, 952], [632, 922], [484, 750], [612, 652],
+    [327, 630], [290, 510], [425, 510], [200, 120], [425, 315]
+  ];
+
+  function startGame() {
+    const name = document.getElementById("playerName").value.trim();
+    if (!name) {
+      alert("Por favor ingresa tu nombre.");
+      return;
+    }
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    document.getElementById("player").textContent = "Jugador: " + name;
+    drawPoints();
+    startTimer();
+  }
+
+  function drawPoints() {
+    const overlay = document.getElementById("overlay");
+    points.forEach((point) => {
+      const p = document.createElement("div");
+      p.classList.add("point");
+      p.style.left = point[0] + "px";
+      p.style.top = point[1] + "px";
+      p.onclick = function () {
+        if (!p.classList.contains("found")) {
+          p.classList.add("found");
+          p.style.backgroundColor = "rgba(0,255,0,0.5)";
+          found++;
+          if (found === totalPoints) {
+            endGame(true);
+          }
+        }
+      };
+      overlay.appendChild(p);
+    });
+  }
+
+  function startTimer() {
+    timerInterval = setInterval(() => {
+      time--;
+      let minutes = Math.floor(time / 60);
+      let seconds = time % 60;
+      document.getElementById("timer").textContent =
+        "Tiempo restante: " + minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
+      if (time <= 0) {
+        endGame(false);
+      }
+    }, 1000);
+  }
+
+  function endGame(won) {
+    clearInterval(timerInterval);
+    if (won) {
+      alert("¡Felicidades! Has encontrado todos los puntos.");
+    } else {
+      alert("¡Tiempo agotado! Has encontrado " + found + " de " + totalPoints + " puntos.");
+    }
+    location.reload();
+  }
+</script>
+
+</body>
+</html>
