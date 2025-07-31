@@ -2,129 +2,104 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Búsqueda – Connected2me</title>
+  <title>Juego - Búsqueda</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
-      text-align: center;
-      font-family: Arial, sans-serif;
-      background-image: url('fondo.jpg');
+      width: 100%;
+      font-family: 'Quicksand', sans-serif;
+      background-color: #f4f0fa;
+      background-image: url('fondo.png');
       background-size: cover;
       background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     #start-screen {
-      min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      padding-top: 310px;
-      text-align: center;
-      color: black;
-    }
-
-    .start-wrapper {
-      display: flex;
-      flex-direction: column;
       align-items: center;
-      animation: fadeInUp 1s ease forwards;
-    }
-
-    #main-title {
-      font-family: 'Times New Roman', serif;
-      font-size: 52px;
-      color: #483D8B;
-      margin-bottom: 30px;
+      height: 100%;
+      width: 100%;
     }
 
     .content-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: rgba(64, 18, 104, 0.15);
-      padding: 40px;
+      background-color: rgba(255, 255, 255, 0.7);
       border-radius: 20px;
-      backdrop-filter: blur(4px);
-      z-index: 1;
-      animation: fadeInUp 1.5s ease forwards;
+      padding: 30px 40px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      animation: fadeInUp 1s ease forwards;
     }
 
-    h2 {
-      font-size: 30px;
-      font-weight: bold;
+    .content-box h2 {
+      font-size: 24px;
       color: #401268;
+      margin-bottom: 20px;
     }
 
-    .content-box p:nth-of-type(1),
-    .content-box p:nth-of-type(2) {
-      margin: 6px 0;
-      color: #1a1a1a;
-      font-weight: 500;
-    }
-
-    .content-box p:nth-of-type(3) {
-      margin-bottom: 2px;
-    }
-
-    input {
-      padding: 10px;
-      margin-top: 10px;
+    .content-box p {
+      margin: 10px 0;
       font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      width: 100%;
-      max-width: 300px;
+      color: #333;
     }
 
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-      font-size: 18px;
+    .content-box input {
+      padding: 10px;
+      font-size: 16px;
+      width: 80%;
+      border: 1px solid #ccc;
       border-radius: 8px;
-      border: none;
+      margin-top: 10px;
+    }
+
+    .content-box button {
+      margin-top: 20px;
+      padding: 10px 20px;
       background-color: #483D8B;
       color: white;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
-      width: auto;
+      font-size: 16px;
     }
 
-    button:hover {
+    .content-box button:hover {
       background-color: #5E35B1;
     }
 
     #game {
       display: none;
-      padding: 30px;
-      color: #401268;
-      font-weight: bold;
+      text-align: center;
     }
 
     #game-container {
       position: relative;
-      display: inline-block;
-      margin-top: 20px;
-    }
-
-    .point {
-      width: 25px;
-      height: 25px;
-      background-color: rgba(255, 0, 0, 1);
-      border-radius: 50%;
-      position: absolute;
-      cursor: pointer;
     }
 
     #overlay {
       position: absolute;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
     }
 
-    #timer {
-      font-size: 24px;
-      margin: 10px;
+    .point {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background-color: rgba(255, 0, 0, 0.4);
+      border-radius: 50%;
+      cursor: pointer;
     }
 
     @keyframes fadeInUp {
@@ -142,16 +117,14 @@
 <body>
 
 <div id="start-screen">
-  <div class="start-wrapper">
-    <h1 id="main-title">Connected2me</h1>
-    <div class="content-box">
-      <h2>¡Encuentra los 15 fantasmas!</h2>
-      <p>Haz click sobre cada fantasma para acumular puntos.</p>
-      <p>Tienes solo 3 minutos para encontrarlos. ¡Suerte!</p>
-      <p>Ingresa tu nombre para comenzar:</p>
-      <input type="text" id="playerName" placeholder="Sara López">
-      <button onclick="startGame()">Comenzar</button>
-    </div>
+  <div class="content-box">
+    <h2>¡Encuentra los 15 fantasmas!</h2>
+    <p>Haz click sobre cada fantasma para acumular puntos.</p>
+    <p>Tienes solo 3 minutos para encontrarlos. ¡Suerte!</p>
+    <p>Ingresa tu nombre para comenzar:</p>
+    <input type="text" id="playerName" placeholder="Sara López">
+    <br>
+    <button onclick="startGame()">Comenzar</button>
   </div>
 </div>
 
