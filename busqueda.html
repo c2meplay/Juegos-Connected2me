@@ -112,6 +112,15 @@
         transform: translateY(0);
       }
     }
+    #timer {
+  font-size: 28px;               /* Tamaño de fuente aumentado */
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 600;
+  color: #401268;
+  text-align: center;            /* ✅ Centrado horizontal */
+  margin: 20px auto;             /* ✅ Centrado horizontal + espaciado vertical */
+  display: block;
+    }
   </style>
 </head>
 <body>
@@ -199,9 +208,9 @@
   function endGame(won) {
     clearInterval(timerInterval);
     if (won) {
-      alert("¡Felicidades! Has encontrado todos los puntos.");
+      alert("¡Felicidades! Has encontrado todos los fantasmas.");
     } else {
-      alert("¡Tiempo agotado! Has encontrado " + found + " de " + totalPoints + " puntos.");
+      alert("¡Tiempo agotado! Has encontrado " + found + " de " + totalPoints + " fantasmas.");
     }
     location.reload();
   }
