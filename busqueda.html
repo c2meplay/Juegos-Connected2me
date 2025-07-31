@@ -42,7 +42,16 @@
       color: #401268;
       margin-bottom: 20px;
     }
+    
+    .content-box p.highlight {
+      color: #111;
+      font-weight: normal;
+    }
 
+    .content-box p.label {
+      margin-bottom: 5px;
+      color: #401268;
+    }
     .content-box p {
       margin: 10px 0;
       color: #401268;
@@ -110,9 +119,9 @@
 <div id="start-screen">
   <div class="content-box">
     <h2>¡Encuentra los 15 fantasmas!</h2>
-    <p>Haz click sobre cada fantasma para acumular puntos.</p>
-    <p>Tienes solo 3 minutos para encontrarlos. ¡Suerte!</p>
-    <p>Ingresa tu nombre para comenzar:</p>
+    <p class="highlight">Haz click sobre cada fantasma para acumular puntos.</p>
+    <p class="highlight">Tienes solo 3 minutos para encontrarlos. ¡Suerte!</p>
+    <p class="label">Ingresa tu nombre para comenzar:</p>
     <input type="text" id="playerName" placeholder="Sara López">
     <br>
     <button onclick="startGame()">Comenzar</button>
