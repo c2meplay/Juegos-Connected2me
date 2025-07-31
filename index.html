@@ -3,22 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <title>Connected2me - Juegos</title>
-  <!-- ✅ Fuente redondeada desde Google Fonts -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- importante para móviles -->
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+
   <style>
+    :root {
+      --vh: 1vh;
+    }
+
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
+      height: calc(var(--vh, 1vh) * 100); /* ✅ Solución responsiva real */
       width: 100%;
+      overflow: hidden;
       font-family: Arial, sans-serif;
       background-color: #f4f0fa;
-      background-image: url('fondo.png'); /* Asegúrate que esté en tu carpeta */
+      background-image: url('fondo.png');
       background-size: cover;
       background-position: top center;
       background-repeat: no-repeat;
-      background-attachment: fixed; /* ✅ Corrige el fondo cortado en scroll */
-      overflow: hidden;
+      background-attachment: fixed;
     }
 
     .container {
@@ -88,7 +93,7 @@
 
     .logo {
       display: block;
-      margin: 60px auto 30px; /* Menor espacio arriba */
+      margin: 60px auto 30px;
       width: 350px;
       max-width: 90%;
       height: auto;
@@ -98,7 +103,6 @@
 </head>
 <body>
 
-  <!-- ✅ Logo en PNG reemplaza al texto Connected2me -->
   <img class="logo" src="besedoplay.png" alt="Besedoplay">
 
   <div class="container">
@@ -120,6 +124,16 @@
       <a href="juego3.html"><button>Jugar</button></a>
     </div>
   </div>
+
+  <!-- ✅ Script para altura responsiva en móviles/tablets -->
+  <script>
+    function setVh() {
+      let vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    setVh();
+    window.addEventListener('resize', setVh);
+  </script>
 
 </body>
 </html>
