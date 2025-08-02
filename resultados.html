@@ -87,7 +87,19 @@
 <body>
   <div class="container">
     <h1>Tabla de Puntajes</h1>
-    <table>
+    <table id="score-table">
+  <thead>
+    <tr>
+      <th>Juego Principal</th>
+      <th>Título del Juego</th>
+      <th>Jugador</th>
+      <th>Puntaje</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Aquí se insertarán los resultados automáticamente -->
+  </tbody>
+    </table>
       <thead>
         <tr>
           <th>Juego Principal</th>
@@ -118,5 +130,29 @@
       </tbody>
     </table>
   </div>
+  <script>
+  const sheetId = "https://docs.google.com/spreadsheets/d/13hbWwDx5JEoA6A3OQB_hF6Ii8aD7RQUz6RfRFscD0iA/edit?pli=1&gid=0#gid=0";
+  const sheetName = "Hoja 1"; // Cámbialo si usas otro nombre de hoja
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+
+  fetch(url)
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substr(47).slice(0, -2));
+      const table = document.querySelector("#score-table tbody");
+      json.table.rows.forEach(row => {
+        const tr = document.createElement("tr");
+        row.c.forEach(cell => {
+          const td = document.createElement("td");
+          td.textContent = cell ? cell.v : "";
+          tr.appendChild(td);
+        });
+        table.appendChild(tr);
+      });
+    })
+    .catch(err => {
+      console.error("Error al cargar la hoja:", err);
+    });
+  </script>
 </body>
 </html>
