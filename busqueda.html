@@ -206,15 +206,39 @@
   }
 
   function endGame(won) {
-    clearInterval(timerInterval);
-    if (won) {
-      alert("¡Felicidades! Has encontrado todos los fantasmas.");
-    } else {
-      alert("¡Tiempo agotado! Has encontrado " + found + " de " + totalPoints + " fantasmas.");
-    }
+  clearInterval(timerInterval);
+  const name = document.getElementById("playerName").value;
+
+  if (won) {
+    alert("¡Felicidades! Has encontrado todos los puntos.");
+  } else {
+    alert("¡Tiempo agotado! Has encontrado " + found + " de " + totalPoints + " fantasmas.");
+  }
+
+  // ✅ Guardar el resultado siempre
+  enviarPuntaje(name, found, "Búsqueda", "Encuentra los 15 fantasmas");
+
+  // ✅ Recargar después de un breve retraso para asegurar que se envía
+  setTimeout(() => {
     location.reload();
+  }, 500);
   }
 </script>
+<script>
+  const scriptURL = "https://script.google.com/macros/s/AKfycbwpBD6NRcqem5MvwzrJbO-9XsmNo1KsFZFbxbWh7FzsGmjIyIvp6k20UO4pFCtzBfKklg/exec"; // Reemplaza por tu URL real
 
+  function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
+    const formData = new FormData();
+    formData.append("nombre", nombre);
+    formData.append("puntaje", puntaje);
+    formData.append("juego", juegoPrincipal);
+    formData.append("titulo", tituloDelJuego);
+
+    fetch(scriptURL, { method: "POST", body: formData })
+      .then(response => console.log("✅ Puntaje enviado"))
+      .catch(error => console.error("❌ Error al enviar puntaje:", error));
+  }
+</script>
+  
 </body>
 </html>
