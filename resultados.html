@@ -16,12 +16,11 @@
       background-position: center;
       background-repeat: no-repeat;
       background-attachment: fixed;
-      overflow-x: hidden;
     }
 
     .container {
       max-width: 1000px;
-      margin: 120px auto 60px;
+      margin: 100px auto 60px;
       background-color: rgba(64, 18, 104, 0.15);
       border-radius: 20px;
       padding: 40px;
@@ -31,9 +30,31 @@
 
     h1 {
       text-align: center;
-      font-size: 48px;
+      font-size: 42px;
       color: #401268;
-      margin-bottom: 40px;
+      margin-bottom: 30px;
+    }
+
+    .tabs {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .tabs button {
+      background-color: #fff;
+      color: #401268;
+      font-weight: bold;
+      border: 2px solid #401268;
+      border-radius: 20px;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .tabs button.active, .tabs button:hover {
+      background-color: #401268;
+      color: white;
     }
 
     table {
@@ -45,10 +66,10 @@
     }
 
     th, td {
-      padding: 16px;
+      padding: 14px;
       text-align: center;
       border-bottom: 1px solid #ddd;
-      font-size: 18px;
+      font-size: 16px;
     }
 
     th {
@@ -65,7 +86,7 @@
         display: block;
       }
 
-      thead {
+      th {
         display: none;
       }
 
@@ -86,51 +107,75 @@
 </head>
 <body>
   <div class="container">
-    <h1>Tabla de Puntajes</h1>
-    <table id="score-table">
+    <h1>Resumen de Puntajes</h1>
+    <div class="tabs">
+      <button onclick="filtrar('todos')" class="active">Todos</button>
+      <button onclick="filtrar('Búsqueda')">Búsqueda</button>
+      <button onclick="filtrar('Diferencia')">Diferencia</button>
+      <button onclick="filtrar('Juego 3')">Juego 3</button>
+    </div>
+    <table>
       <thead>
         <tr>
-          <th>Juego Principal</th>
-          <th>Título del Juego</th>
           <th>Jugador</th>
-          <th>Puntaje</th>
+          <th>Juego</th>
+          <th>Total de Puntos</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- Aquí se insertarán los resultados automáticamente -->
-      </tbody>
+      <tbody id="tabla-resumen"></tbody>
     </table>
   </div>
 
   <script>
-    const sheetId = "13hbWwDx5JEoA6A3OQB_hF6Ii8aD7RQUz6RfRFscD0iA"; // ✅ solo el ID
-    const sheetName = "Hoja 1"; // cámbialo si usas otro nombre
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+    const url = 'https://docs.google.com/spreadsheets/d/13hbWwDx5JEoA6A3OQB_hF6Ii8aD7RQUz6RfRFscD0iA/gviz/tq?tqx=out:json&sheet=Hoja 1';
+    let datosAgrupados = [];
+
+    function filtrar(filtro) {
+      document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const cuerpo = document.getElementById("tabla-resumen");
+      cuerpo.innerHTML = "";
+
+      const filtrados = datosAgrupados.filter(d => filtro === 'todos' || d.juego === filtro);
+
+      filtrados.forEach(d => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${d.jugador}</td>
+          <td>${d.juego}</td>
+          <td>${d.puntaje}</td>
+        `;
+        cuerpo.appendChild(tr);
+      });
+    }
 
     fetch(url)
       .then(res => res.text())
       .then(text => {
         const json = JSON.parse(text.substr(47).slice(0, -2));
-        const rows = json.table.rows.map(r => r.c.map(c => (c ? c.v : "")));
+        const rows = json.table.rows;
 
-        // Ordenar por puntaje (última columna) de mayor a menor
-        rows.sort((a, b) => b[3] - a[3]);
+        const acumulado = {};
 
-        const tbody = document.querySelector("#score-table tbody");
         rows.forEach(row => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td data-label="Juego Principal">${row[0]}</td>
-            <td data-label="Título del Juego">${row[1]}</td>
-            <td data-label="Jugador">${row[2]}</td>
-            <td data-label="Puntaje">${row[3]}</td>
-          `;
-          tbody.appendChild(tr);
+          if (!row.c) return;
+          const juego = row.c[2]?.v || '';
+          const titulo = row.c[3]?.v || '';
+          const jugador = row.c[0]?.v || '';
+          const puntaje = parseInt(row.c[1]?.v || '0');
+
+          const clave = `${jugador}_${juego}`;
+          if (!acumulado[clave]) {
+            acumulado[clave] = { jugador, juego, puntaje: 0 };
+          }
+          acumulado[clave].puntaje += puntaje;
         });
+
+        datosAgrupados = Object.values(acumulado);
+        filtrar("todos");
       })
-      .catch(err => {
-        console.error("Error al cargar la hoja:", err);
-      });
+      .catch(err => console.error("Error al cargar:", err));
   </script>
 </body>
 </html>
