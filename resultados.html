@@ -125,58 +125,6 @@
       <tbody id="tabla-resumen"></tbody>
     </table>
   </div>
-
-  <script>
-    const url = 'https://docs.google.com/spreadsheets/d/13hbWwDx5JEoA6A3OQB_hF6Ii8aD7RQUz6RfRFscD0iA/gviz/tq?tqx=out:json&sheet=Hoja 1';
-    let datosAgrupados = [];
-
-    function filtrar(filtro) {
-      document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-
-      const cuerpo = document.getElementById("tabla-resumen");
-      cuerpo.innerHTML = "";
-
-      const filtrados = datosAgrupados.filter(d => filtro === 'todos' || d.juego === filtro);
-
-      filtrados.forEach(d => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${d.jugador}</td>
-          <td>${d.juego}</td>
-          <td>${d.puntaje}</td>
-        `;
-        cuerpo.appendChild(tr);
-      });
-    }
-
-    fetch(url)
-      .then(res => res.text())
-      .then(text => {
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        const rows = json.table.rows;
-
-        const acumulado = {};
-
-        rows.forEach(row => {
-          if (!row.c) return;
-          const juego = row.c[2]?.v || '';
-          const titulo = row.c[3]?.v || '';
-          const jugador = row.c[0]?.v || '';
-          const puntaje = parseInt(row.c[1]?.v || '0');
-
-          const clave = `${jugador}_${juego}`;
-          if (!acumulado[clave]) {
-            acumulado[clave] = { jugador, juego, puntaje: 0 };
-          }
-          acumulado[clave].puntaje += puntaje;
-        });
-
-        datosAgrupados = Object.values(acumulado);
-        filtrar("todos");
-      })
-      .catch(err => console.error("Error al cargar:", err));
-  </script>
   <!-- ... todo igual hasta el final del script anterior ... -->
 
   <h1 style="margin-top: 60px;">Total General por Jugador</h1>
