@@ -177,5 +177,118 @@
       })
       .catch(err => console.error("Error al cargar:", err));
   </script>
+  <!-- ... todo igual hasta el final del script anterior ... -->
+
+<div class="container">
+  <h1>Resumen de Puntajes</h1>
+
+  <div class="tabs">
+    <button onclick="filtrar('todos')" class="active">Todos</button>
+    <button onclick="filtrar('Búsqueda')">Búsqueda</button>
+    <button onclick="filtrar('Diferencia')">Diferencia</button>
+    <button onclick="filtrar('Juego 3')">Juego 3</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Jugador</th>
+        <th>Juego</th>
+        <th>Total de Puntos</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-resumen"></tbody>
+  </table>
+
+  <h1 style="margin-top: 60px;">Total General por Jugador</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Jugador</th>
+        <th>Puntaje Total</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-total"></tbody>
+  </table>
+</div>
+
+<script>
+  const url = 'https://docs.google.com/spreadsheets/d/13hbWwDx5JEoA6A3OQB_hF6Ii8aD7RQUz6RfRFscD0iA/gviz/tq?tqx=out:json&sheet=Hoja 1';
+  let datosAgrupados = [];
+  let resumenTotal = {};
+
+  function filtrar(filtro) {
+    document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    const cuerpo = document.getElementById("tabla-resumen");
+    cuerpo.innerHTML = "";
+
+    const filtrados = datosAgrupados.filter(d => filtro === 'todos' || d.juego === filtro);
+
+    filtrados.forEach(d => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${d.jugador}</td>
+        <td>${d.juego}</td>
+        <td>${d.puntaje}</td>
+      `;
+      cuerpo.appendChild(tr);
+    });
+  }
+
+  function renderResumenTotal() {
+    const cuerpo = document.getElementById("tabla-total");
+    cuerpo.innerHTML = "";
+
+    // Convertimos objeto a array y ordenamos por puntaje
+    const ordenados = Object.entries(resumenTotal).map(([jugador, puntaje]) => ({ jugador, puntaje }))
+      .sort((a, b) => b.puntaje - a.puntaje);
+
+    ordenados.forEach(d => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${d.jugador}</td>
+        <td>${d.puntaje}</td>
+      `;
+      cuerpo.appendChild(tr);
+    });
+  }
+
+  fetch(url)
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substr(47).slice(0, -2));
+      const rows = json.table.rows;
+
+      const acumulado = {};
+      resumenTotal = {};
+
+      rows.forEach(row => {
+        if (!row.c) return;
+        const jugador = row.c[0]?.v || '';
+        const puntaje = parseInt(row.c[1]?.v || '0');
+        const juego = row.c[2]?.v || '';
+
+        // Por juego
+        const clave = `${jugador}_${juego}`;
+        if (!acumulado[clave]) {
+          acumulado[clave] = { jugador, juego, puntaje: 0 };
+        }
+        acumulado[clave].puntaje += puntaje;
+
+        // Total general
+        if (!resumenTotal[jugador]) {
+          resumenTotal[jugador] = 0;
+        }
+        resumenTotal[jugador] += puntaje;
+      });
+
+      datosAgrupados = Object.values(acumulado);
+      filtrar("todos");
+      renderResumenTotal();
+    })
+    .catch(err => console.error("Error al cargar:", err));
+</script>
 </body>
 </html>
