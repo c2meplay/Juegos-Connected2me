@@ -125,7 +125,6 @@
       <tbody id="tabla-resumen"></tbody>
     </table>
   </div>
-  <!-- ... todo igual hasta el final del script anterior ... -->
 
   <h1 style="margin-top: 60px;">Total General por Jugador</h1>
   <table>
@@ -137,7 +136,6 @@
     </thead>
     <tbody id="tabla-total"></tbody>
   </table>
-</div>
 
 <script>
   const url = 'https://docs.google.com/spreadsheets/d/13hbWwDx5JEoA6A3OQB_hF6Ii8aD7RQUz6RfRFscD0iA/gviz/tq?tqx=out:json&sheet=Hoja 1';
@@ -151,7 +149,9 @@
     const cuerpo = document.getElementById("tabla-resumen");
     cuerpo.innerHTML = "";
 
-    const filtrados = datosAgrupados.filter(d => filtro === 'todos' || d.juego === filtro);
+    const filtrados = datosAgrupados
+      .filter(d => filtro === 'todos' || d.juego === filtro)
+      .sort((a, b) => b.puntaje - a.puntaje); // Ordenar de mayor a menor
 
     filtrados.forEach(d => {
       const tr = document.createElement("tr");
@@ -168,7 +168,6 @@
     const cuerpo = document.getElementById("tabla-total");
     cuerpo.innerHTML = "";
 
-    // Convertimos objeto a array y ordenamos por puntaje
     const ordenados = Object.entries(resumenTotal).map(([jugador, puntaje]) => ({ jugador, puntaje }))
       .sort((a, b) => b.puntaje - a.puntaje);
 
@@ -197,14 +196,12 @@
         const puntaje = parseInt(row.c[1]?.v || '0');
         const juego = row.c[2]?.v || '';
 
-        // Por juego
         const clave = `${jugador}_${juego}`;
         if (!acumulado[clave]) {
           acumulado[clave] = { jugador, juego, puntaje: 0 };
         }
         acumulado[clave].puntaje += puntaje;
 
-        // Total general
         if (!resumenTotal[jugador]) {
           resumenTotal[jugador] = 0;
         }
