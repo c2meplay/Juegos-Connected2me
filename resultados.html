@@ -184,6 +184,8 @@
   fetch(url)
     .then(res => res.text())
     .then(text => {
+      console.log("Contenido recibido de Sheets: ");
+      console.log(text);
       const json = JSON.parse(text.substr(47).slice(0, -2));
       const rows = json.table.rows;
 
