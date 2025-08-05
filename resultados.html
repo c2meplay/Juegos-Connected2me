@@ -109,10 +109,10 @@
   <div class="container">
     <h1>Resumen de Puntajes</h1>
     <div class="tabs">
-      <button onclick="filtrar('todos')" class="active">Todos</button>
-      <button onclick="filtrar('Búsqueda')">Búsqueda</button>
-      <button onclick="filtrar('Diferencia')">Diferencia</button>
-      <button onclick="filtrar('Juego 3')">Juego 3</button>
+      <button onclick="filtrar('todos', event)" class="active">Todos</button>
+      <button onclick="filtrar('Búsqueda', event)">Búsqueda</button>
+      <button onclick="filtrar('Diferencia', event)">Diferencia</button>
+      <button onclick="filtrar('Juego 3', event)">Juego 3</button>
     </div>
     <table>
       <thead>
@@ -142,7 +142,7 @@
   let datosAgrupados = [];
   let resumenTotal = {};
 
-  function filtrar(filtro) {
+  function filtrar(filtro, event) {
     document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
 
@@ -151,7 +151,7 @@
 
     const filtrados = datosAgrupados
       .filter(d => filtro === 'todos' || d.juego === filtro)
-      .sort((a, b) => b.puntaje - a.puntaje); // Ordenar de mayor a menor
+      .sort((a, b) => b.puntaje - a.puntaje);
 
     filtrados.forEach(d => {
       const tr = document.createElement("tr");
@@ -184,8 +184,6 @@
   fetch(url)
     .then(res => res.text())
     .then(text => {
-      console.log("Contenido recibido de Sheets: ");
-      console.log(text);
       const json = JSON.parse(text.substr(47).slice(0, -2));
       const rows = json.table.rows;
 
@@ -211,7 +209,7 @@
       });
 
       datosAgrupados = Object.values(acumulado);
-      filtrar("todos");
+      filtrar("todos", { target: document.querySelector('.tabs button.active') });
       renderResumenTotal();
     })
     .catch(err => console.error("Error al cargar:", err));
