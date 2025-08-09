@@ -43,15 +43,8 @@
       margin-bottom: 20px;
     }
 
-    .content-box p.highlight {
-      color: #111;
-      font-weight: normal;
-    }
-
-    .content-box p.label {
-      margin-bottom: 5px;
-      color: #401268;
-    }
+    .content-box p.highlight { color: #111; font-weight: normal; }
+    .content-box p.label { margin-bottom: 5px; color: #401268; }
 
     .content-box input {
       padding: 10px;
@@ -73,10 +66,7 @@
       cursor: pointer;
       font-size: 16px;
     }
-
-    .content-box button:hover {
-      background-color: #5E35B1;
-    }
+    .content-box button:hover { background-color: #5E35B1; }
 
     /* ===== Zona del juego ===== */
     #game {
@@ -87,52 +77,36 @@
       box-sizing: border-box;
     }
 
-    .topbar {
+    /* Fila de títulos (Jugador / Fantasmas) y fila de contadores (Tiempo / Errores) */
+    .row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 20px 10px;
-      gap: 16px;
+      padding: 0 20px;
+      margin-bottom: 6px;
     }
-    .group-left,
-    .group-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    #timer {
-      font-size: 18px;
+
+    /* Estilo grande para timer y errores (misma fuente que timer) */
+    .metric {
+      font-size: 28px;
       font-weight: 600;
       color: #401268;
       margin: 0;
     }
 
-    #game-container {
-      position: relative;
-      width: 100%;
-    }
-
-    #background {
-      max-width: 100%;
-      height: auto;
-      display: block;
-    }
+    #game-container { position: relative; width: 100%; }
+    #background { max-width: 100%; height: auto; display: block; }
 
     #overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      /* IMPORTANTE: permitir clics para contar errores */
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
       pointer-events: auto;
     }
 
     .point {
       position: absolute;
-      width: 30px;
-      height: 30px;
-      background-color: rgba(255, 0, 0, 0); /* invisible al inicio */
+      width: 30px; height: 30px;
+      background-color: rgba(255, 0, 0, 0); /* invisible */
       border-radius: 50%;
       cursor: pointer;
       pointer-events: auto;
@@ -159,15 +133,15 @@
 </div>
 
 <div id="game">
-  <div class="topbar">
-    <div class="group-left">
-      <h3 id="player" style="margin:0;"></h3>
-      <span id="timer">Tiempo restante: 2:00</span>
-    </div>
-    <div class="group-right">
-      <h3 id="found-counter" style="margin:0; color:#401268;">Fantasmas encontrados: 0</h3>
-      <h3 id="error-counter" style="margin:0; color:#401268;">Errores: 0 / 3</h3>
-    </div>
+  <!-- Línea 1 -->
+  <div class="row">
+    <h3 id="player" style="margin:0;">Jugador:</h3>
+    <h3 id="found-counter" style="margin:0; color:#401268;">Fantasmas encontrados: 0</h3>
+  </div>
+  <!-- Línea 2 -->
+  <div class="row">
+    <h3 id="timer" class="metric">Tiempo restante: 2:00</h3>
+    <h3 id="error-counter" class="metric">Errores: 0 / 3</h3>
   </div>
 
   <div id="game-container">
@@ -178,29 +152,17 @@
 
 <script>
   // ===== Variables de juego =====
-  let time = 120;           // 2 minutos (en segundos). Si quieres 2:30, pon 150.
+  let time = 120;           // 2:00 (en segundos). Si quieres 2:30, pon 150.
   let timerInterval;
   let found = 0;
   let errores = 0;
   const totalPoints = 15;
 
-  // Coordenadas de los puntos (ajústalas a tu imagen 700x1000 si cambias tamaño)
+  // Coordenadas (ajústalas a tu imagen si cambias tamaño)
   const points = [
-    [42, 102],   // lupa
-    [100, 120],  // maleta marrón
-    [345, 30],   // foco
-    [198, 325],  // vaso de lápices
-    [118, 628],  // vaso del escritorio 
-    [302, 517],  // monitor
-    [425, 520],  // archivero lado monitor
-    [125, 817],  // cajones del escritorio 
-    [333, 655],  // mouse
-    [147, 950],  // disquete
-    [495, 760],  // silla
-    [640, 896],  // altavoz
-    [25, 453],   // archiv izquierda 
-    [633, 675],  // impresora 
-    [396, 307]   // carpeta por vaso con lápices
+    [42,102],[100,120],[345,30],[198,325],[118,628],
+    [302,517],[425,520],[125,817],[333,655],[147,950],
+    [495,760],[640,896],[25,453],[633,675],[396,307]
   ];
 
   function startGame() {
@@ -231,7 +193,6 @@
     // Clics incorrectos: clic en overlay (no en un punto)
     overlay.onclick = function (e) {
       if (e.target.id === "overlay") {
-        // Sonido de error
         const err = document.getElementById("sfx-error");
         if (err) { err.currentTime = 0; err.play().catch(()=>{}); }
 
