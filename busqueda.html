@@ -17,7 +17,6 @@
       background-position: center;
       background-repeat: no-repeat;
       background-attachment: fixed;
-      /* Ya no usamos overflow: hidden aquí */
     }
 
     #start-screen {
@@ -79,12 +78,33 @@
       background-color: #5E35B1;
     }
 
+    /* ===== Zona del juego ===== */
     #game {
       display: none;
       height: 100vh;
-      overflow-y: auto; /* ✅ Scroll solo vertical */
+      overflow-y: auto; /* Scroll solo vertical en el juego */
       padding: 20px;
       box-sizing: border-box;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px 10px;
+      gap: 16px;
+    }
+    .group-left,
+    .group-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    #timer {
+      font-size: 18px;
+      font-weight: 600;
+      color: #401268;
+      margin: 0;
     }
 
     #game-container {
@@ -104,37 +124,23 @@
       left: 0;
       width: 100%;
       height: 100%;
-      pointer-events: none;
+      /* IMPORTANTE: permitir clics para contar errores */
+      pointer-events: auto;
     }
 
     .point {
       position: absolute;
       width: 30px;
       height: 30px;
-      background-color: rgba(255, 0, 0, 0);
+      background-color: rgba(255, 0, 0, 0); /* invisible al inicio */
       border-radius: 50%;
       cursor: pointer;
       pointer-events: auto;
     }
 
     @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    #timer {
-      font-size: 28px;
-      font-weight: 600;
-      color: #401268;
-      text-align: center;
-      margin: 20px auto;
-      display: block;
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -153,40 +159,49 @@
 </div>
 
 <div id="game">
-  <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
-  <h3 id="player" style="margin: 0;"></h3>
-  <h3 id="found-counter" style="margin: 0; color: #401268;">Fantasmas encontrados: 0</h3>
+  <div class="topbar">
+    <div class="group-left">
+      <h3 id="player" style="margin:0;"></h3>
+      <span id="timer">Tiempo restante: 2:00</span>
+    </div>
+    <div class="group-right">
+      <h3 id="found-counter" style="margin:0; color:#401268;">Fantasmas encontrados: 0</h3>
+      <h3 id="error-counter" style="margin:0; color:#401268;">Errores: 0 / 3</h3>
+    </div>
   </div>
-  <div id="timer">Tiempo restante: 3:00</div>
+
   <div id="game-container">
-    <img src="juego.png" id="background">
+    <img src="juego.png" id="background" alt="Tablero del juego">
     <div id="overlay"></div>
   </div>
 </div>
 
 <script>
-  let time = 120;
+  // ===== Variables de juego =====
+  let time = 120;           // 2 minutos (en segundos). Si quieres 2:30, pon 150.
   let timerInterval;
   let found = 0;
+  let errores = 0;
   const totalPoints = 15;
 
- const points = [
-  [42, 102],     // lupa
-  [100, 120],    // maleta marron
-  [345, 30],    // foco
-  [198, 325],     // vaso de lapices
-  [118, 628],    // vaso del escritorio 
-  [302, 517],    // monitor
-  [425, 520],    // archivero lado monitor
-  [125, 817],    // cajones del escritorio 
-  [333, 655],    // mouse
-  [147, 950],    // disquete
-  [495, 760],    // silla
-  [640, 896],    // altavoz
-  [25, 453],    // archiv izquierda 
-  [633, 675],    // impresora 
-  [396, 307]     // carpeta por vaso con lapices
-];
+  // Coordenadas de los puntos (ajústalas a tu imagen 700x1000 si cambias tamaño)
+  const points = [
+    [42, 102],   // lupa
+    [100, 120],  // maleta marrón
+    [345, 30],   // foco
+    [198, 325],  // vaso de lápices
+    [118, 628],  // vaso del escritorio 
+    [302, 517],  // monitor
+    [425, 520],  // archivero lado monitor
+    [125, 817],  // cajones del escritorio 
+    [333, 655],  // mouse
+    [147, 950],  // disquete
+    [495, 760],  // silla
+    [640, 896],  // altavoz
+    [25, 453],   // archiv izquierda 
+    [633, 675],  // impresora 
+    [396, 307]   // carpeta por vaso con lápices
+  ];
 
   function startGame() {
     const name = document.getElementById("playerName").value.trim();
@@ -196,7 +211,15 @@
     }
     document.getElementById("start-screen").style.display = "none";
     document.getElementById("game").style.display = "block";
+
+    // Inicializar UI
     document.getElementById("player").textContent = "Jugador: " + name;
+    found = 0;
+    errores = 0;
+    document.getElementById("found-counter").textContent = "Fantasmas encontrados: 0";
+    document.getElementById("error-counter").textContent = "Errores: 0 / 3";
+    document.getElementById("timer").textContent = "Tiempo restante: " + formatTime(time);
+
     drawPoints();
     startTimer();
   }
@@ -204,15 +227,35 @@
   function drawPoints() {
     const overlay = document.getElementById("overlay");
     overlay.innerHTML = '';
+
+    // Clics incorrectos: clic en overlay (no en un punto)
+    overlay.onclick = function (e) {
+      if (e.target.id === "overlay") {
+        // Sonido de error
+        const err = document.getElementById("sfx-error");
+        if (err) { err.currentTime = 0; err.play().catch(()=>{}); }
+
+        errores++;
+        document.getElementById("error-counter").textContent = `Errores: ${errores} / 3`;
+        if (errores >= 3) {
+          alert(`¡Perdiste! Hiciste ${errores} clics incorrectos y encontraste ${found} fantasmas.`);
+          endGame(false);
+        }
+      }
+    };
+
+    // Crear puntos clicables
     points.forEach((point) => {
       const p = document.createElement("div");
       p.classList.add("point");
       p.style.left = point[0] + "px";
       p.style.top = point[1] + "px";
-      p.onclick = function () {
+
+      p.onclick = function (event) {
+        event.stopPropagation(); // No contar como error
         if (!p.classList.contains("found")) {
           p.classList.add("found");
-          p.style.backgroundColor = "rgba(128,0,128,0.2)";
+          p.style.backgroundColor = "rgba(128,0,128,0.2)"; // morado suave
           found++;
           document.getElementById("found-counter").textContent = "Fantasmas encontrados: " + found;
           if (found === totalPoints) {
@@ -220,21 +263,26 @@
           }
         }
       };
+
       overlay.appendChild(p);
     });
   }
 
   function startTimer() {
+    clearInterval(timerInterval);
     timerInterval = setInterval(() => {
       time--;
-      let minutes = Math.floor(time / 60);
-      let seconds = time % 60;
-      document.getElementById("timer").textContent =
-        "Tiempo restante: " + minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
+      document.getElementById("timer").textContent = "Tiempo restante: " + formatTime(time);
       if (time <= 0) {
         endGame(false);
       }
     }, 1000);
+  }
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return m + ":" + (sec < 10 ? "0" + sec : sec);
   }
 
   function endGame(won) {
@@ -244,7 +292,7 @@
     if (won) {
       alert("¡Felicidades! Has encontrado todos los puntos.");
     } else {
-      alert("¡Tiempo agotado! Has encontrado " + found + " de " + totalPoints + " fantasmas.");
+      alert("¡Tiempo agotado o 3 errores! Has encontrado " + found + " de " + totalPoints + " fantasmas.");
     }
 
     enviarPuntaje(name, found, "Búsqueda", "Encuentra los 15 fantasmas");
@@ -268,10 +316,13 @@
     formData.append("fecha", fechaHora);
 
     fetch(scriptURL, { method: "POST", body: formData })
-      .then(response => console.log("✅ Puntaje enviado"))
+      .then(() => console.log("✅ Puntaje enviado"))
       .catch(error => console.error("❌ Error al enviar puntaje:", error));
   }
 </script>
+
+<!-- Audio de error -->
+<audio id="sfx-error" src="error.mp3" preload="auto"></audio>
 
 </body>
 </html>
