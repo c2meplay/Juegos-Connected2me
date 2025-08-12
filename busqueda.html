@@ -156,6 +156,7 @@
   let timerInterval;
   let found = 0;
   let errores = 0;
+  let gameOver = false;     // ✅ evita dobles finales
   const totalPoints = 15;
 
   // Coordenadas (ajústalas a tu imagen si cambias tamaño)
@@ -178,6 +179,7 @@
     document.getElementById("player").textContent = "Jugador: " + name;
     found = 0;
     errores = 0;
+    gameOver = false;
     document.getElementById("found-counter").textContent = "Fantasmas: 0";
     document.getElementById("error-counter").textContent = "Errores: 0 / 3";
     document.getElementById("timer").textContent = "Tiempo restante: " + formatTime(time);
@@ -192,15 +194,14 @@
 
     // Clics incorrectos: clic en overlay (no en un punto)
     overlay.onclick = function (e) {
-      if (e.target.id === "overlay") {
+      if (e.target.id === "overlay" && !gameOver) {
         const err = document.getElementById("sfx-error");
         if (err) { err.currentTime = 0; err.play().catch(()=>{}); }
 
         errores++;
         document.getElementById("error-counter").textContent = `Errores: ${errores} / 3`;
         if (errores >= 3) {
-          alert(`¡Perdiste! Hiciste ${errores} clics incorrectos y encontraste ${found} fantasmas.`);
-          endGame(false);
+          endGame('errors'); // ✅ un solo mensaje dentro de endGame
         }
       }
     };
@@ -214,13 +215,13 @@
 
       p.onclick = function (event) {
         event.stopPropagation(); // No contar como error
-        if (!p.classList.contains("found")) {
+        if (!p.classList.contains("found") && !gameOver) {
           p.classList.add("found");
           p.style.backgroundColor = "rgba(128,0,128,0.2)"; // morado suave
           found++;
           document.getElementById("found-counter").textContent = "Fantasmas: " + found;
           if (found === totalPoints) {
-            endGame(true);
+            endGame('win');
           }
         }
       };
@@ -232,10 +233,11 @@
   function startTimer() {
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
+      if (gameOver) return;
       time--;
       document.getElementById("timer").textContent = "Tiempo restante: " + formatTime(time);
       if (time <= 0) {
-        endGame(false);
+        endGame('timeout');
       }
     }, 1000);
   }
@@ -246,16 +248,27 @@
     return m + ":" + (sec < 10 ? "0" + sec : sec);
   }
 
-  function endGame(won) {
+  function endGame(reason) {
+    if (gameOver) return;        // ✅ evita doble ejecución
+    gameOver = true;
     clearInterval(timerInterval);
-    const name = document.getElementById("playerName").value;
 
-    if (won) {
-      alert("¡Felicidades! Has encontrado todos los fantasmas.");
+    const name = document.getElementById("playerName").value;
+    let msg = "";
+
+    if (reason === 'win') {
+      msg = "¡Felicidades! Has encontrado todos los fantasmas.";
+    } else if (reason === 'errors') {
+      msg = `¡Perdiste! Hiciste ${errores} clics incorrectos y encontraste ${found} fantasmas.`;
+    } else if (reason === 'timeout') {
+      msg = `¡Tiempo agotado! Has encontrado ${found} de ${totalPoints} fantasmas.`;
     } else {
-      alert("¡Tiempo agotado! Has encontrado " + found + " de " + totalPoints + " fantasmas.");
+      msg = `Fin del juego. Has encontrado ${found} de ${totalPoints} fantasmas.`;
     }
 
+    alert(msg);
+
+    // Registrar puntaje siempre
     enviarPuntaje(name, found, "Búsqueda", "Encuentra los 15 fantasmas");
 
     setTimeout(() => {
