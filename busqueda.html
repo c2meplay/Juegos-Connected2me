@@ -178,7 +178,7 @@
     document.getElementById("player").textContent = "Jugador: " + name;
     found = 0;
     errores = 0;
-    document.getElementById("found-counter").textContent = "Fantasmas encontrados: 0";
+    document.getElementById("found-counter").textContent = "Fantasmas: 0";
     document.getElementById("error-counter").textContent = "Errores: 0 / 3";
     document.getElementById("timer").textContent = "Tiempo restante: " + formatTime(time);
 
@@ -218,7 +218,7 @@
           p.classList.add("found");
           p.style.backgroundColor = "rgba(128,0,128,0.2)"; // morado suave
           found++;
-          document.getElementById("found-counter").textContent = "Fantasmas encontrados: " + found;
+          document.getElementById("found-counter").textContent = "Fantasmas: " + found;
           if (found === totalPoints) {
             endGame(true);
           }
@@ -251,7 +251,7 @@
     const name = document.getElementById("playerName").value;
 
     if (won) {
-      alert("¡Felicidades! Has encontrado todos los puntos.");
+      alert("¡Felicidades! Has encontrado todos los fantasmas.");
     } else {
       alert("¡Tiempo agotado o 3 errores! Has encontrado " + found + " de " + totalPoints + " fantasmas.");
     }
