@@ -116,10 +116,54 @@
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
+    /* Botón casita, mismo look que el trofeo */
+.home-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;                         /* encima del juego */
+  background-color: rgba(64, 18, 104, 0.15);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  border-radius: 50%;
+  backdrop-filter: blur(4px);
+  padding: 20px;
+  box-shadow: 0 0px 12px rgba(0, 0, 0, 0.2);
+}
+
+.home-btn img {
+  width: 100px;
+  height: auto;
+  display: block;
+  animation: glowPulse 2s infinite ease-in-out; /* misma animación */
+}
+
+.home-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0px 16px rgba(64, 18, 104, 0.3);
+}
+
+/* Reusa la misma animación del trofeo */
+@keyframes glowPulse {
+  0%   { filter: drop-shadow(0 0 5px rgba(64, 18, 104, 0.3)); }
+  50%  { filter: drop-shadow(0 0 12px rgba(64, 18, 104, 0.6)); }
+  100% { filter: drop-shadow(0 0 5px rgba(64, 18, 104, 0.3)); }
+}
+
+/* Opcional: un poco más pequeño en pantallas chicas */
+@media (max-width: 480px) {
+  .home-btn { padding: 14px; }
+  .home-btn img { width: 72px; }
+}
   </style>
 </head>
 <body>
 
+<!-- Botón de inicio a index -->
+<a href="index.html" class="home-btn" title="Volver al inicio">
+  <img src="casa.png" alt="Inicio">
+</a>
 <div id="start-screen">
   <div class="content-box">
     <h2>¡Encuentra los 15 fantasmas!</h2>
