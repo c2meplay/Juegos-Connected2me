@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Juego Diferencias</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      height: 100%; width: 100%;
+      font-family: 'Quicksand', sans-serif;
+      background-color: #f4f0fa;
+      background-image: url('fondo.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    #start-screen {
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh;
+    }
+
+    .content-box {
+      background-color: rgba(64, 18, 104, 0.15);
+      backdrop-filter: blur(4px);
+      border-radius: 20px;
+      padding: 40px 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 500px;
+      text-align: center;
+      animation: fadeInUp 1.5s ease forwards;
+    }
+
+    .content-box h2 { font-size: 28px; color: #401268; margin-bottom: 20px; }
+    .content-box p.highlight { color: #111; font-weight: normal; }
+    .content-box p.label { margin-bottom: 5px; color: #401268; }
+
+    .content-box input {
+      padding: 10px; width: 80%; max-width: 300px; margin-top: 15px;
+      border-radius: 8px; border: 1px solid #ccc;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    .content-box button {
+      margin-top: 15px; padding: 10px 20px;
+      background-color: #483D8B; color: white; border: none;
+      border-radius: 8px; cursor: pointer; font-size: 16px;
+    }
+    .content-box button:hover { background-color: #5E35B1; }
+
+    /* ===== Zona del juego ===== */
+    #game {
+      display: none;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px; box-sizing: border-box;
+    }
+
+    .row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 5px; margin-bottom: 6px;
+    }
+
+    .metric { font-size: 28px; font-weight: 600; color: #401268; margin: 0; }
+
+    #game-container { position: relative; width: 100%; }
+    #background { max-width: 100%; height: auto; display: block; }
+
+    #overlay {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: auto;
+    }
+
+    .point {
+      position: absolute;
+      width: 30px; height: 30px;
+      background-color: rgba(255,0,0,0); /* invisible */
+      border-radius: 50%; cursor: pointer; pointer-events: auto;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Botón casita (solo pantalla inicial) */
+    .home-btn {
+      position: fixed; top: 20px; left: 20px; z-index: 1000;
+      background-color: rgba(64, 18, 104, 0.15);
+      border: none; cursor: pointer; transition: transform .2s ease;
+      border-radius: 50%; backdrop-filter: blur(4px);
+      padding: 20px; box-shadow: 0 0px 12px rgba(0,0,0,0.2);
+    }
+    .home-btn img {
+      width: 100px; height: auto; display: block;
+      animation: glowPulse 2s infinite ease-in-out;
+    }
+    .home-btn:hover { transform: scale(1.1); box-shadow: 0 0px 16px rgba(64,18,104,0.3); }
+    @keyframes glowPulse {
+      0% { filter: drop-shadow(0 0 5px rgba(64,18,104,0.3)); }
+      50% { filter: drop-shadow(0 0 12px rgba(64,18,104,0.6)); }
+      100% { filter: drop-shadow(0 0 5px rgba(64,18,104,0.3)); }
+    }
+    @media (max-width: 480px) {
+      .home-btn { padding: 14px; }
+      .home-btn img { width: 72px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="start-screen">
+  <!-- Casita solo en pantalla inicial -->
+  <a href="index.html" class="home-btn" title="Volver al inicio">
+    <img src="casa.png" alt="Inicio">
+  </a>
+
+  <div class="content-box">
+    <h2>¡Encuentra las 10 diferencias!</h2>
+    <p class="highlight">Haz clic sobre cada diferencia para acumular puntos.</p>
+    <p class="highlight">¡Cuidado! 3 intentos fallidos y el juego terminará.</p>
+    <p class="highlight">Tienes solo 3 minutos para encontrarlas. ¡Suerte!</p>
+    <p class="label">Ingresa tu nombre para comenzar:</p>
+    <input type="text" id="playerName" placeholder="Sara López" />
+    <br>
+    <button onclick="startGame()">Comenzar</button>
+  </div>
+</div>
+
+<div id="game">
+  <!-- Línea 1 -->
+  <div class="row">
+    <h3 id="player" style="margin:0;">Jugador:</h3>
+    <h3 id="found-counter" style="margin:0; color:#401268;">Diferencias: 0</h3>
+  </div>
+  <!-- Línea 2 -->
+  <div class="row">
+    <h3 id="timer" class="metric">Tiempo restante: 3:00</h3>
+    <h3 id="error-counter" class="metric">Errores: 0 / 3</h3>
+  </div>
+
+  <div id="game-container">
+    <!-- Usa tu imagen de diferencias -->
+    <img src="juego-diferencias.png" id="background" alt="Juego de diferencias">
+    <div id="overlay"></div>
+  </div>
+</div>
+
+<script>
+  // ===== Lógica del juego de DIFERENCIAS =====
+  let time = 180;          // 3:00 minutos
+  let timerInterval;
+  let found = 0;
+  let errores = 0;
+  let gameOver = false;
+  const totalPoints = 10;
+
+  // 🔧 Coloca aquí las 10 coordenadas (x,y) de tus diferencias
+  // Ejemplo provisional (cámbialas por las reales):
+  const points = [
+    [120,140],[280,160],[420,210],[560,260],[160,360],
+    [300,420],[480,520],[220,640],[380,760],[520,880]
+  ];
+
+  function startGame() {
+    const name = document.getElementById("playerName").value.trim();
+    if (!name) { alert("Por favor ingresa tu nombre."); return; }
+
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("game").style.display = "block";
+
+    // UI inicial
+    document.getElementById("player").textContent = "Jugador: " + name;
+    found = 0; errores = 0; gameOver = false;
+    document.getElementById("found-counter").textContent = "Diferencias: 0";
+    document.getElementById("error-counter").textContent = "Errores: 0 / 3";
+    document.getElementById("timer").textContent = "Tiempo restante: " + formatTime(time);
+
+    drawPoints();
+    startTimer();
+  }
+
+  function drawPoints() {
+    const overlay = document.getElementById("overlay");
+    overlay.innerHTML = '';
+
+    // Clic incorrecto = clic en overlay (no en un punto)
+    overlay.onclick = function(e) {
+      if (e.target.id === "overlay" && !gameOver) {
+        const err = document.getElementById("sfx-error");
+        if (err) { err.currentTime = 0; err.play().catch(()=>{}); }
+
+        errores++;
+        document.getElementById("error-counter").textContent = `Errores: ${errores} / 3`;
+        if (errores >= 3) endGame('errors');
+      }
+    };
+
+    // Crear 10 puntos clicables
+    points.forEach(([x,y]) => {
+      const p = document.createElement("div");
+      p.classList.add("point");
+      p.style.left = x + "px";
+      p.style.top  = y + "px";
+
+      p.onclick = function(ev) {
+        ev.stopPropagation(); // no contar como error
+        if (!p.classList.contains("found") && !gameOver) {
+          p.classList.add("found");
+          p.style.backgroundColor = "rgba(128,0,128,0.25)"; // morado suave
+          found++;
+          document.getElementById("found-counter").textContent = "Diferencias: " + found;
+          if (found === totalPoints) endGame('win');
+        }
+      };
+
+      overlay.appendChild(p);
+    });
+  }
+
+  function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (gameOver) return;
+      time--;
+      document.getElementById("timer").textContent = "Tiempo restante: " + formatTime(time);
+      if (time <= 0) endGame('timeout');
+    }, 1000);
+  }
+
+  function formatTime(s) {
+    const m = Math.floor(s/60), sec = s % 60;
+    return m + ":" + (sec < 10 ? "0" + sec : sec);
+  }
+
+  function endGame(reason) {
+    if (gameOver) return;
+    gameOver = true;
+    clearInterval(timerInterval);
+
+    const name = document.getElementById("playerName").value;
+    let msg = "";
+    if (reason === 'win') {
+      msg = "¡Felicidades! Has encontrado todas las diferencias.";
+    } else if (reason === 'errors') {
+      msg = `¡Perdiste! Hiciste ${errores} clics incorrectos y encontraste ${found} diferencias.`;
+    } else if (reason === 'timeout') {
+      msg = `¡Tiempo agotado! Has encontrado ${found} de ${totalPoints} diferencias.`;
+    } else {
+      msg = `Fin del juego. Has encontrado ${found} de ${totalPoints} diferencias.`;
+    }
+
+    alert(msg);
+
+    // Guarda el resultado
+    enviarPuntaje(name, found, "Diferencias", "Encuentra las 10 diferencias");
+
+    setTimeout(() => location.reload(), 500);
+  }
+</script>
+
+<script>
+  // Usa el mismo Apps Script que ya tienes
+  const scriptURL = "https://script.google.com/macros/s/AKfycbzPsd51L1YDmXKGNAh-bTHsla5K8o3XR-Q24zawWIEMQsjS8acR9gg5GfSOqY7on9Rj/exec";
+
+  function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
+    const formData = new FormData();
+    formData.append("nombre", nombre);
+    formData.append("puntaje", puntaje);
+    formData.append("juego", juegoPrincipal);
+    formData.append("titulo", tituloDelJuego);
+    const fechaHora = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
+    formData.append("fecha", fechaHora);
+
+    fetch(scriptURL, { method: "POST", body: formData })
+      .then(() => console.log("✅ Puntaje enviado"))
+      .catch(err => console.error("❌ Error al enviar puntaje:", err));
+  }
+</script>
+
+<!-- Sonido solo para clics incorrectos -->
+<audio id="sfx-error" src="error.mp3" preload="auto"></audio>
+
+</body>
+</html>
