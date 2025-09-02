@@ -32,9 +32,8 @@
       text-align: center;
       animation: fadeInUp 1.5s ease forwards;
     }
-
     .content-box h2 { font-size: 28px; color: #401268; margin-bottom: 20px; }
-    .content-box p.highlight { color: #111; font-weight: normal; }
+    .content-box p.highlight { color:#111; font-weight: normal; }
     .content-box p.label { margin-bottom: 5px; color: #401268; }
 
     .content-box input {
@@ -76,9 +75,15 @@
 
     .point {
       position: absolute;
-      width: 30px; height: 30px;
       background-color: rgba(255,0,0,0); /* invisible */
-      border-radius: 50%; cursor: pointer; pointer-events: auto;
+      border-radius: 50%;
+      cursor: pointer; pointer-events: auto;
+      transform: translate(-50%, -50%); /* centrar por el centro */
+      box-sizing: border-box;
+    }
+    .point.found {
+      background-color: rgba(128,0,128,0.2);
+      border: 2px solid rgba(128,0,128,0.6);
     }
 
     @keyframes fadeInUp {
@@ -134,7 +139,7 @@
   <!-- Línea 1 -->
   <div class="row">
     <h3 id="player" style="margin:0;">Jugador:</h3>
-    <h3 id="found-counter" style="margin:0; color:#401268;">Diferencias: 0</h3>
+    <h3 id="found-counter" style="margin:0; color:#401268;">Diferencias: 0 / 10</h3>
   </div>
   <!-- Línea 2 -->
   <div class="row">
@@ -143,27 +148,72 @@
   </div>
 
   <div id="game-container">
-    <!-- Usa tu imagen de diferencias -->
-    <img src="juego-diferencias.png" id="background" alt="Juego de diferencias">
+    <!-- Imagen única (izq+der) -->
+    <img src="diferencias.png" id="background" alt="Juego de diferencias">
     <div id="overlay"></div>
   </div>
 </div>
 
 <script>
-  // ===== Lógica del juego de DIFERENCIAS =====
-  let time = 180;          // 3:00 minutos
+  /* =================== CONFIGURACIÓN =================== */
+  const BASE_W = 4392;   // ancho total de tu PNG (dos lados)
+  const BASE_H = 2236;   // alto total de tu PNG
+  let time = 180;        // 3 minutos
+  const totalPairs = 10;
+  const maxErrores = 3;
+
+  // Tamaños exactos por grupo
+  const sizeMap = {
+    A: 134,  // 4 círculos
+    B: 217,  // 4 círculos
+    C: 385,  // 1 círculo
+    D: 497   // 1 círculo
+  };
+
+  // === PARES con coordenadas (x,y) ABSOLUTAS sobre el lienzo 4392×2236 ===
+  // 4 de 134 px
+  const pairsA = [
+    { left:{x:1613,y:370},  right:{x:3759,y:370} },
+    { left:{x:1218,y:528},  right:{x:3364,y:528} },
+    { left:{x:2087,y:1156}, right:{x:4233,y:1156} },
+    { left:{x:756,y:1934},  right:{x:2902,y:1934} }
+  ];
+  // 4 de 217 px
+  const pairsB = [
+    { left:{x:422,y:1044},  right:{x:2567,y:1044} },
+    { left:{x:289,y:752},   right:{x:2434,y:752} },
+    { left:{x:1111,y:882},  right:{x:3256,y:882} },
+    { left:{x:884,y:167},   right:{x:3029,y:167} }
+  ];
+  // 1 de 385 px
+  const pairC = { left:{x:1971,y:1961}, right:{x:4116,y:1961} };
+  // 1 de 497 px
+  const pairD = { left:{x:1239,y:1861}, right:{x:3384,y:1861} };
+
+  // Unimos todo con ids y sizeKey
+  const pairs = [
+    // A (4)
+    { id:1, sizeKey:'A', left:pairsA[0].left, right:pairsA[0].right },
+    { id:2, sizeKey:'A', left:pairsA[1].left, right:pairsA[1].right },
+    { id:3, sizeKey:'A', left:pairsA[2].left, right:pairsA[2].right },
+    { id:4, sizeKey:'A', left:pairsA[3].left, right:pairsA[3].right },
+    // B (4)
+    { id:5, sizeKey:'B', left:pairsB[0].left, right:pairsB[0].right },
+    { id:6, sizeKey:'B', left:pairsB[1].left, right:pairsB[1].right },
+    { id:7, sizeKey:'B', left:pairsB[2].left, right:pairsB[2].right },
+    { id:8, sizeKey:'B', left:pairsB[3].left, right:pairsB[3].right },
+    // C (1)
+    { id:9, sizeKey:'C', left:pairC.left, right:pairC.right },
+    // D (1)
+    { id:10, sizeKey:'D', left:pairD.left, right:pairD.right }
+  ];
+
+  /* ============== LÓGICA DEL JUEGO ============== */
   let timerInterval;
   let found = 0;
   let errores = 0;
   let gameOver = false;
-  const totalPoints = 10;
-
-  // 🔧 Coloca aquí las 10 coordenadas (x,y) de tus diferencias
-  // Ejemplo provisional (cámbialas por las reales):
-  const points = [
-    [120,140],[280,160],[420,210],[560,260],[160,360],
-    [300,420],[480,520],[220,640],[380,760],[520,880]
-  ];
+  const pairFound = new Map(); // id -> boolean
 
   function startGame() {
     const name = document.getElementById("playerName").value.trim();
@@ -172,53 +222,92 @@
     document.getElementById("start-screen").style.display = "none";
     document.getElementById("game").style.display = "block";
 
-    // UI inicial
     document.getElementById("player").textContent = "Jugador: " + name;
-    found = 0; errores = 0; gameOver = false;
-    document.getElementById("found-counter").textContent = "Diferencias: 0";
-    document.getElementById("error-counter").textContent = "Errores: 0 / 3";
+    found = 0; errores = 0; gameOver = false; pairFound.clear();
+    document.getElementById("found-counter").textContent = `Diferencias: 0 / ${totalPairs}`;
+    document.getElementById("error-counter").textContent = `Errores: 0 / ${maxErrores}`;
     document.getElementById("timer").textContent = "Tiempo restante: " + formatTime(time);
 
     drawPoints();
     startTimer();
+    // Opcional: reubicar puntos si cambia el tamaño (rotación, resize)
+    window.addEventListener('resize', debounceRedraw, { passive:true });
   }
 
   function drawPoints() {
     const overlay = document.getElementById("overlay");
     overlay.innerHTML = '';
 
-    // Clic incorrecto = clic en overlay (no en un punto)
-    overlay.onclick = function(e) {
+    // Clic erróneo = clic en overlay vacío
+    overlay.onclick = function (e) {
       if (e.target.id === "overlay" && !gameOver) {
-        const err = document.getElementById("sfx-error");
-        if (err) { err.currentTime = 0; err.play().catch(()=>{}); }
-
         errores++;
-        document.getElementById("error-counter").textContent = `Errores: ${errores} / 3`;
-        if (errores >= 3) endGame('errors');
+        document.getElementById("error-counter").textContent = `Errores: ${errores} / ${maxErrores}`;
+        if (errores >= maxErrores) endGame('errors');
       }
     };
 
-    // Crear 10 puntos clicables
-    points.forEach(([x,y]) => {
-      const p = document.createElement("div");
-      p.classList.add("point");
-      p.style.left = x + "px";
-      p.style.top  = y + "px";
+    const img = document.getElementById("background");
+    if (!img.complete) {
+      img.onload = placePoints;
+    } else {
+      placePoints();
+    }
 
-      p.onclick = function(ev) {
-        ev.stopPropagation(); // no contar como error
-        if (!p.classList.contains("found") && !gameOver) {
-          p.classList.add("found");
-          p.style.backgroundColor = "rgba(128,0,128,0.25)"; // morado suave
-          found++;
-          document.getElementById("found-counter").textContent = "Diferencias: " + found;
-          if (found === totalPoints) endGame('win');
-        }
-      };
+    function placePoints() {
+      const rect = img.getBoundingClientRect();
+      const scaleX = rect.width / BASE_W;
+      const scaleY = rect.height / BASE_H;
 
-      overlay.appendChild(p);
+      // Ajustar overlay a la imagen (no al contenedor completo)
+      overlay.style.width = rect.width + "px";
+      overlay.style.height = rect.height + "px";
+      overlay.style.left = img.offsetLeft + "px";
+      overlay.style.top  = img.offsetTop + "px";
+
+      pairs.forEach(pair => {
+        const sizePx = sizeMap[pair.sizeKey] || 30;
+
+        const makePoint = (pos, side) => {
+          const p = document.createElement("div");
+          p.className = "point";
+          p.dataset.pairId = pair.id;
+          p.dataset.side = side;
+          // tamaño escalado (manteniendo proporción de la imagen renderizada)
+          p.style.width  = (sizePx * scaleX) + "px";
+          p.style.height = (sizePx * scaleY) + "px";
+          // posición escalada
+          p.style.left = (pos.x * scaleX) + "px";
+          p.style.top  = (pos.y * scaleY) + "px";
+
+          p.onclick = function (ev) {
+            ev.stopPropagation();
+            revealPair(pair.id);
+          };
+
+          overlay.appendChild(p);
+        };
+
+        makePoint(pair.left,  "left");
+        makePoint(pair.right, "right");
+      });
+    }
+  }
+
+  function revealPair(id) {
+    if (gameOver) return;
+    if (pairFound.get(id)) return;
+
+    const allPoints = Array.from(document.querySelectorAll(`.point[data-pair-id="${id}"]`));
+    allPoints.forEach(p => {
+      p.classList.add("found");
+      p.style.pointerEvents = "none";
     });
+
+    pairFound.set(id, true);
+    found++;
+    document.getElementById("found-counter").textContent = `Diferencias: ${found} / ${totalPairs}`;
+    if (found >= totalPairs) endGame('win');
   }
 
   function startTimer() {
@@ -241,29 +330,34 @@
     gameOver = true;
     clearInterval(timerInterval);
 
-    const name = document.getElementById("playerName").value;
+    const name = document.getElementById("playerName").value || "";
     let msg = "";
     if (reason === 'win') {
       msg = "¡Felicidades! Has encontrado todas las diferencias.";
     } else if (reason === 'errors') {
       msg = `¡Perdiste! Hiciste ${errores} clics incorrectos y encontraste ${found} diferencias.`;
     } else if (reason === 'timeout') {
-      msg = `¡Tiempo agotado! Has encontrado ${found} de ${totalPoints} diferencias.`;
+      msg = `¡Tiempo agotado! Has encontrado ${found} de ${totalPairs} diferencias.`;
     } else {
-      msg = `Fin del juego. Has encontrado ${found} de ${totalPoints} diferencias.`;
+      msg = `Fin del juego. Has encontrado ${found} de ${totalPairs} diferencias.`;
     }
-
     alert(msg);
 
-    // Guarda el resultado
     enviarPuntaje(name, found, "Diferencias", "Encuentra las 10 diferencias");
 
     setTimeout(() => location.reload(), 500);
   }
+
+  // Redibuja puntos al cambiar tamaño de ventana (debounce)
+  let resizeTimer;
+  function debounceRedraw(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(drawPoints, 200);
+  }
 </script>
 
 <script>
-  // Usa el mismo Apps Script que ya tienes
+  // Usa tu Apps Script existente
   const scriptURL = "https://script.google.com/macros/s/AKfycbzPsd51L1YDmXKGNAh-bTHsla5K8o3XR-Q24zawWIEMQsjS8acR9gg5GfSOqY7on9Rj/exec";
 
   function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
@@ -281,7 +375,7 @@
   }
 </script>
 
-<!-- Sonido solo para clics incorrectos -->
+<!-- Sonido de error (solo para clics incorrectos si quieres reutilizar) -->
 <audio id="sfx-error" src="error.mp3" preload="auto"></audio>
 
 </body>
