@@ -172,24 +172,44 @@
 
   // === PARES con coordenadas (x,y) ABSOLUTAS sobre el lienzo 4392×2236 ===
   // 4 de 134 px
-  const pairsA = [
-    { left:{x:1613,y:370},  right:{x:3759,y:370} },
-    { left:{x:1218,y:528},  right:{x:3364,y:528} },
-    { left:{x:2087,y:1156}, right:{x:4233,y:1156} },
-    { left:{x:756,y:1934},  right:{x:2902,y:1934} }
-  ];
-  // 4 de 217 px
-  const pairsB = [
-    { left:{x:422,y:1044},  right:{x:2567,y:1044} },
-    { left:{x:289,y:752},   right:{x:2434,y:752} },
-    { left:{x:1111,y:882},  right:{x:3256,y:882} },
-    { left:{x:884,y:167},   right:{x:3029,y:167} }
-  ];
-  // 1 de 385 px
-  const pairC = { left:{x:1971,y:1961}, right:{x:4116,y:1961} };
-  // 1 de 497 px
-  const pairD = { left:{x:1239,y:1861}, right:{x:3384,y:1861} };
+const pairsA = [
+  { left:{x:1613,y:1866}, right:{x:3759,y:1866} },
+  { left:{x:1218,y:1708}, right:{x:3364,y:1708} },
+  { left:{x:2087,y:1080}, right:{x:4233,y:1080} },
+  { left:{x:756, y:302 }, right:{x:2902,y:302 } }
+];
 
+// 4 de 217 px
+const pairsB = [
+  { left:{x:422, y:1192}, right:{x:2567,y:1192} },
+  { left:{x:289, y:1484}, right:{x:2434,y:1484} },
+  { left:{x:1111,y:1354}, right:{x:3256,y:1354} },
+  { left:{x:884, y:2069}, right:{x:3029,y:2069} }
+];
+
+// 1 de 385 px
+const pairC = { left:{x:1971,y:275}, right:{x:4116,y:275} };
+
+// 1 de 497 px
+const pairD = { left:{x:1239,y:375}, right:{x:3384,y:375} };
+
+// Unimos todo con ids y sizeKey
+const pairs = [
+  // A (4)
+  { id:1, sizeKey:'A', left:pairsA[0].left, right:pairsA[0].right },
+  { id:2, sizeKey:'A', left:pairsA[1].left, right:pairsA[1].right },
+  { id:3, sizeKey:'A', left:pairsA[2].left, right:pairsA[2].right },
+  { id:4, sizeKey:'A', left:pairsA[3].left, right:pairsA[3].right },
+  // B (4)
+  { id:5, sizeKey:'B', left:pairsB[0].left, right:pairsB[0].right },
+  { id:6, sizeKey:'B', left:pairsB[1].left, right:pairsB[1].right },
+  { id:7, sizeKey:'B', left:pairsB[2].left, right:pairsB[2].right },
+  { id:8, sizeKey:'B', left:pairsB[3].left, right:pairsB[3].right },
+  // C (1)
+  { id:9, sizeKey:'C', left:pairC.left, right:pairC.right },
+  // D (1)
+  { id:10, sizeKey:'D', left:pairD.left, right:pairD.right }
+];
   // Unimos todo con ids y sizeKey
   const pairs = [
     // A (4)
