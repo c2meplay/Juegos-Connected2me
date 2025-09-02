@@ -75,7 +75,7 @@
 
     .point {
       position: absolute;
-      background-color: rgba(255,0,0,1); /* invisible */
+      background-color: rgba(255,0,0,0); /* invisible */
       border-radius: 50%;
       cursor: pointer; pointer-events: auto;
       transform: translate(-50%, -50%); /* centrar por el centro */
@@ -84,6 +84,7 @@
     .point.found {
       background-color: rgba(128,0,128,0.2);
       border: 2px solid rgba(128,0,128,0.6);
+      pointer-events: auto; /* <- seguir aceptando clics (no contarán error) */
     }
 
     @keyframes fadeInUp {
@@ -170,46 +171,46 @@
     D: 497   // 1 círculo
   };
 
-  // === PARES con coordenadas (x,y) ABSOLUTAS sobre el lienzo 4392×2236 ===
+  // === PARES con coordenadas (x,y) sobre el lienzo 4392×2236 (ya corregidas) ===
   // 4 de 134 px
-const pairsA = [
-  { left:{x:1613,y:1866}, right:{x:3759,y:1866} },
-  { left:{x:1218,y:1708}, right:{x:3364,y:1708} },
-  { left:{x:2087,y:1080}, right:{x:4233,y:1080} },
-  { left:{x:756, y:302 }, right:{x:2902,y:302 } }
-];
+  const pairsA = [
+    { left:{x:1613,y:1866}, right:{x:3759,y:1866} },
+    { left:{x:1218,y:1708}, right:{x:3364,y:1708} },
+    { left:{x:2087,y:1080}, right:{x:4233,y:1080} },
+    { left:{x:756, y:302 }, right:{x:2902,y:302 } }
+  ];
 
-// 4 de 217 px
-const pairsB = [
-  { left:{x:422, y:1192}, right:{x:2567,y:1192} },
-  { left:{x:289, y:1484}, right:{x:2434,y:1484} },
-  { left:{x:1111,y:1354}, right:{x:3256,y:1354} },
-  { left:{x:884, y:2069}, right:{x:3029,y:2069} }
-];
+  // 4 de 217 px
+  const pairsB = [
+    { left:{x:422, y:1192}, right:{x:2567,y:1192} },
+    { left:{x:289, y:1484}, right:{x:2434,y:1484} },
+    { left:{x:1111,y:1354}, right:{x:3256,y:1354} },
+    { left:{x:884, y:2069}, right:{x:3029,y:2069} }
+  ];
 
-// 1 de 385 px
-const pairC = { left:{x:1971,y:275}, right:{x:4116,y:275} };
+  // 1 de 385 px
+  const pairC = { left:{x:1971,y:275}, right:{x:4116,y:275} };
 
-// 1 de 497 px
-const pairD = { left:{x:1239,y:375}, right:{x:3384,y:375} };
+  // 1 de 497 px
+  const pairD = { left:{x:1239,y:375}, right:{x:3384,y:375} };
 
-// Unimos todo con ids y sizeKey
-const pairs = [
-  // A (4)
-  { id:1, sizeKey:'A', left:pairsA[0].left, right:pairsA[0].right },
-  { id:2, sizeKey:'A', left:pairsA[1].left, right:pairsA[1].right },
-  { id:3, sizeKey:'A', left:pairsA[2].left, right:pairsA[2].right },
-  { id:4, sizeKey:'A', left:pairsA[3].left, right:pairsA[3].right },
-  // B (4)
-  { id:5, sizeKey:'B', left:pairsB[0].left, right:pairsB[0].right },
-  { id:6, sizeKey:'B', left:pairsB[1].left, right:pairsB[1].right },
-  { id:7, sizeKey:'B', left:pairsB[2].left, right:pairsB[2].right },
-  { id:8, sizeKey:'B', left:pairsB[3].left, right:pairsB[3].right },
-  // C (1)
-  { id:9, sizeKey:'C', left:pairC.left, right:pairC.right },
-  // D (1)
-  { id:10, sizeKey:'D', left:pairD.left, right:pairD.right }
-];
+  // Unimos todo con ids y sizeKey
+  const pairs = [
+    // A (4)
+    { id:1, sizeKey:'A', left:pairsA[0].left, right:pairsA[0].right },
+    { id:2, sizeKey:'A', left:pairsA[1].left, right:pairsA[1].right },
+    { id:3, sizeKey:'A', left:pairsA[2].left, right:pairsA[2].right },
+    { id:4, sizeKey:'A', left:pairsA[3].left, right:pairsA[3].right },
+    // B (4)
+    { id:5, sizeKey:'B', left:pairsB[0].left, right:pairsB[0].right },
+    { id:6, sizeKey:'B', left:pairsB[1].left, right:pairsB[1].right },
+    { id:7, sizeKey:'B', left:pairsB[2].left, right:pairsB[2].right },
+    { id:8, sizeKey:'B', left:pairsB[3].left, right:pairsB[3].right },
+    // C (1)
+    { id:9, sizeKey:'C', left:pairC.left, right:pairC.right },
+    // D (1)
+    { id:10, sizeKey:'D', left:pairD.left, right:pairD.right }
+  ];
 
   /* ============== LÓGICA DEL JUEGO ============== */
   let timerInterval;
@@ -233,7 +234,6 @@ const pairs = [
 
     drawPoints();
     startTimer();
-    // Opcional: reubicar puntos si cambia el tamaño (rotación, resize)
     window.addEventListener('resize', debounceRedraw, { passive:true });
   }
 
@@ -241,9 +241,10 @@ const pairs = [
     const overlay = document.getElementById("overlay");
     overlay.innerHTML = '';
 
-    // Clic erróneo = clic en overlay vacío
+    // Contar error solo si el clic NO fue sobre un punto
     overlay.onclick = function (e) {
-      if (e.target.id === "overlay" && !gameOver) {
+      if (gameOver) return;
+      if (!e.target.classList.contains('point')) {
         errores++;
         document.getElementById("error-counter").textContent = `Errores: ${errores} / ${maxErrores}`;
         if (errores >= maxErrores) endGame('errors');
@@ -258,69 +259,66 @@ const pairs = [
     }
 
     function placePoints() {
-  const img = document.getElementById("background");
-  const overlay = document.getElementById("overlay");
-  const container = document.getElementById("game-container");
+      const imgRect  = img.getBoundingClientRect();
+      const contRect = document.getElementById("game-container").getBoundingClientRect();
 
-  const imgRect = img.getBoundingClientRect();
-  const contRect = container.getBoundingClientRect();
+      const scaleX = imgRect.width  / BASE_W;
+      const scaleY = imgRect.height / BASE_H;
+      const scale  = scaleX; // mantener círculos perfectos (la imagen mantiene proporción)
 
-  // Escalas de la imagen respecto al tamaño base
-  const scaleX = imgRect.width  / BASE_W;
-  const scaleY = imgRect.height / BASE_H;
-  // Usa un único factor para mantener los círculos perfectamente redondos
-  const scale = scaleX; // asumiendo que la imagen conserva proporción
+      // Ajusta overlay exactamente sobre la imagen
+      overlay.style.width  = imgRect.width  + "px";
+      overlay.style.height = imgRect.height + "px";
+      overlay.style.left   = (imgRect.left - contRect.left) + "px";
+      overlay.style.top    = (imgRect.top  - contRect.top ) + "px";
 
-  // Ajusta overlay exactamente sobre la imagen
-  overlay.style.width  = imgRect.width  + "px";
-  overlay.style.height = imgRect.height + "px";
-  overlay.style.left   = (imgRect.left - contRect.left) + "px";
-  overlay.style.top    = (imgRect.top  - contRect.top ) + "px";
+      // Limpia puntos previos
+      overlay.innerHTML = "";
 
-  // Limpia puntos previos
-  overlay.innerHTML = "";
+      // Crea puntos
+      pairs.forEach(pair => {
+        const sizePx = sizeMap[pair.sizeKey] || 30;
 
-  // Crea puntos
-  pairs.forEach(pair => {
-    const sizePx = sizeMap[pair.sizeKey] || 30;
+        const makePoint = (pos, side) => {
+          const p = document.createElement("div");
+          p.className = "point";
+          p.dataset.pairId = pair.id;
+          p.dataset.side = side;
 
-    const makePoint = (pos, side) => {
-      const p = document.createElement("div");
-      p.className = "point";
-      p.dataset.pairId = pair.id;
-      p.dataset.side = side;
+          // tamaño (un solo factor de escala)
+          const d = sizePx * scale;
+          p.style.width  = d + "px";
+          p.style.height = d + "px";
 
-      // tamaño usando un solo scale para que no se “aplasten”
-      const d = sizePx * scale;
-      p.style.width  = d + "px";
-      p.style.height = d + "px";
+          // posición escalada
+          p.style.left = (pos.x * scaleX) + "px";
+          p.style.top  = (pos.y * scaleY) + "px";
 
-      // posición escalada
-      p.style.left = (pos.x * scaleX) + "px";
-      p.style.top  = (pos.y * scaleY) + "px";
+          p.onclick = function (ev) {
+            ev.stopPropagation();              // evita que el overlay cuente error
+            const id = Number(p.dataset.pairId);
+            if (gameOver) return;
+            if (pairFound.get(id)) return;     // ya encontrada: no sumar, no error
+            revealPair(id);
+          };
 
-      p.onclick = function (ev) {
-        ev.stopPropagation();
-        revealPair(pair.id);
-      };
+          overlay.appendChild(p);
+        };
 
-      overlay.appendChild(p);
-    };
-
-    makePoint(pair.left,  "left");
-    makePoint(pair.right, "right");
-  });
-}    
+        makePoint(pair.left,  "left");
+        makePoint(pair.right, "right");
+      });
+    }
   }
 
   function revealPair(id) {
     if (gameOver) return;
     if (pairFound.get(id)) return;
 
-    const allPoints = Array.from(document.querySelectorAll(`.point[data-pair-id="${id}"]`));
+    const allPoints = document.querySelectorAll(`.point[data-pair-id="${id}"]`);
     allPoints.forEach(p => {
       p.classList.add("found");
-      p.style.pointerEvents = "none";
+      // ¡No desactivar pointer-events!
     });
 
     pairFound.set(id, true);
@@ -394,7 +392,7 @@ const pairs = [
   }
 </script>
 
-<!-- Sonido de error (solo para clics incorrectos si quieres reutilizar) -->
+<!-- Sonido de error (si quieres usarlo) -->
 <audio id="sfx-error" src="error.mp3" preload="auto"></audio>
 
 </body>
