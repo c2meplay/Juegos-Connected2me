@@ -258,43 +258,59 @@ const pairs = [
     }
 
     function placePoints() {
-      const rect = img.getBoundingClientRect();
-      const scaleX = rect.width / BASE_W;
-      const scaleY = rect.height / BASE_H;
+  const img = document.getElementById("background");
+  const overlay = document.getElementById("overlay");
+  const container = document.getElementById("game-container");
 
-      // Ajustar overlay a la imagen (no al contenedor completo)
-      overlay.style.width = rect.width + "px";
-      overlay.style.height = rect.height + "px";
-      overlay.style.left = img.offsetLeft + "px";
-      overlay.style.top  = img.offsetTop + "px";
+  const imgRect = img.getBoundingClientRect();
+  const contRect = container.getBoundingClientRect();
 
-      pairs.forEach(pair => {
-        const sizePx = sizeMap[pair.sizeKey] || 30;
+  // Escalas de la imagen respecto al tamaño base
+  const scaleX = imgRect.width  / BASE_W;
+  const scaleY = imgRect.height / BASE_H;
+  // Usa un único factor para mantener los círculos perfectamente redondos
+  const scale = scaleX; // asumiendo que la imagen conserva proporción
 
-        const makePoint = (pos, side) => {
-          const p = document.createElement("div");
-          p.className = "point";
-          p.dataset.pairId = pair.id;
-          p.dataset.side = side;
-          // tamaño escalado (manteniendo proporción de la imagen renderizada)
-          p.style.width  = (sizePx * scaleX) + "px";
-          p.style.height = (sizePx * scaleY) + "px";
-          // posición escalada
-          p.style.left = (pos.x * scaleX) + "px";
-          p.style.top  = (pos.y * scaleY) + "px";
+  // Ajusta overlay exactamente sobre la imagen
+  overlay.style.width  = imgRect.width  + "px";
+  overlay.style.height = imgRect.height + "px";
+  overlay.style.left   = (imgRect.left - contRect.left) + "px";
+  overlay.style.top    = (imgRect.top  - contRect.top ) + "px";
 
-          p.onclick = function (ev) {
-            ev.stopPropagation();
-            revealPair(pair.id);
-          };
+  // Limpia puntos previos
+  overlay.innerHTML = "";
 
-          overlay.appendChild(p);
-        };
+  // Crea puntos
+  pairs.forEach(pair => {
+    const sizePx = sizeMap[pair.sizeKey] || 30;
 
-        makePoint(pair.left,  "left");
-        makePoint(pair.right, "right");
-      });
-    }
+    const makePoint = (pos, side) => {
+      const p = document.createElement("div");
+      p.className = "point";
+      p.dataset.pairId = pair.id;
+      p.dataset.side = side;
+
+      // tamaño usando un solo scale para que no se “aplasten”
+      const d = sizePx * scale;
+      p.style.width  = d + "px";
+      p.style.height = d + "px";
+
+      // posición escalada
+      p.style.left = (pos.x * scaleX) + "px";
+      p.style.top  = (pos.y * scaleY) + "px";
+
+      p.onclick = function (ev) {
+        ev.stopPropagation();
+        revealPair(pair.id);
+      };
+
+      overlay.appendChild(p);
+    };
+
+    makePoint(pair.left,  "left");
+    makePoint(pair.right, "right");
+  });
+}    
   }
 
   function revealPair(id) {
