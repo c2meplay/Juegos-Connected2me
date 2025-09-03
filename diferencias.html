@@ -243,13 +243,15 @@
 
     // Contar error solo si el clic NO fue sobre un punto
     overlay.onclick = function (e) {
-      if (gameOver) return;
-      if (!e.target.classList.contains('point')) {
-        errores++;
-        document.getElementById("error-counter").textContent = `Errores: ${errores} / ${maxErrores}`;
-        if (errores >= maxErrores) endGame('errors');
-      }
-    };
+  if (e.target.id === "overlay" && !gameOver) {
+    const err = document.getElementById("sfx-error");
+    if (err) { err.currentTime = 0; err.play().catch(()=>{}); }
+
+    errores++;
+    document.getElementById("error-counter").textContent = `Errores: ${errores} / ${maxErrores}`;
+    if (errores >= maxErrores) endGame('errors');
+  }
+};
 
     const img = document.getElementById("background");
     if (!img.complete) {
