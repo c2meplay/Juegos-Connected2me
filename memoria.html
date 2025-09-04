@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Memoria</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      height: 100%; width: 100%;
+      font-family: 'Quicksand', sans-serif;
+      background-color: #f4f0fa;
+      background-image: url('fondo.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    /* Pantalla inicial */
+    #start-screen {
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh;
+    }
+    .content-box {
+      background-color: rgba(64, 18, 104, 0.15);
+      backdrop-filter: blur(4px);
+      border-radius: 20px;
+      padding: 40px 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 500px;
+      text-align: center;
+      animation: fadeInUp 1.5s ease forwards;
+    }
+    .content-box h2 { font-size: 28px; color: #401268; margin-bottom: 20px; }
+    .content-box p.highlight { color:#111; font-weight: normal; }
+    .content-box p.label { margin-bottom: 5px; color: #401268; }
+    .content-box input {
+      padding: 10px; width: 80%; max-width: 300px; margin-top: 15px;
+      border-radius: 8px; border: 1px solid #ccc;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .content-box button {
+      margin-top: 15px; padding: 10px 20px;
+      background-color: #483D8B; color: white; border: none;
+      border-radius: 8px; cursor: pointer; font-size: 16px;
+    }
+    .content-box button:hover { background-color: #5E35B1; }
+
+    /* Botón casita (solo pantalla inicial) */
+    .home-btn {
+      position: fixed; top: 20px; left: 20px; z-index: 1000;
+      background-color: rgba(64, 18, 104, 0.15);
+      border: none; cursor: pointer; transition: transform .2s ease;
+      border-radius: 50%; backdrop-filter: blur(4px);
+      padding: 20px; box-shadow: 0 0px 12px rgba(0,0,0,0.2);
+    }
+    .home-btn img {
+      width: 100px; height: auto; display: block;
+      animation: glowPulse 2s infinite ease-in-out;
+    }
+    .home-btn:hover { transform: scale(1.1); box-shadow: 0 0px 16px rgba(64,18,104,0.3); }
+    @keyframes glowPulse {
+      0% { filter: drop-shadow(0 0 5px rgba(64,18,104,0.3)); }
+      50% { filter: drop-shadow(0 0 12px rgba(64,18,104,0.6)); }
+      100% { filter: drop-shadow(0 0 5px rgba(64,18,104,0.3)); }
+    }
+
+    /* Zona del juego */
+    #game { display:none; height: 100vh; overflow-y: auto; padding: 20px; box-sizing: border-box; }
+    .row { display:flex; justify-content: space-between; align-items:center; padding:0 5px; margin-bottom:6px; }
+    .metric { font-size: 28px; font-weight: 600; color:#401268; margin:0; }
+
+    /* Tablero de memoria */
+    .board {
+      margin: 10px auto 30px;
+      width: min(1100px, 92vw);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);   /* 6 x 4 = 24 cartas */
+      gap: 14px;
+      justify-items: center;
+    }
+    @media (max-width: 900px) {
+      .board { grid-template-columns: repeat(4, 1fr); } /* 4 x 6 en móviles */
+    }
+
+    .card {
+      width: 150px; height: 180px;
+      perspective: 900px;
+    }
+    .card-inner {
+      position: relative; width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform .35s ease;
+      border-radius: 16px;
+    }
+    .card.flipped .card-inner { transform: rotateY(180deg); }
+    .card.matched .card-inner { transform: rotateY(180deg); }
+    .card.matched .front {
+      box-shadow: 0 0 0 3px rgba(128,0,128,.55), 0 0 18px rgba(128,0,128,.45);
+      animation: pulseWin .9s ease;
+    }
+    @keyframes pulseWin {
+      0% { box-shadow: 0 0 0 0 rgba(128,0,128,0.0); }
+      50% { box-shadow: 0 0 0 6px rgba(128,0,128,.45); }
+      100%{ box-shadow: 0 0 0 3px rgba(128,0,128,.55); }
+    }
+
+    .face {
+      position:absolute; inset:0;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size: 42px;
+      color:#401268;
+      user-select: none;
+    }
+    .back {
+      background: linear-gradient(180deg, rgba(64,18,104,.18), rgba(64,18,104,.28));
+      border: 2px solid #5E35B1;
+    }
+    .front {
+      transform: rotateY(180deg);
+      background: #fff;
+      border: 2px solid #5E35B1;
+    }
+    .symbol {
+      font-size: 64px;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,.12));
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="start-screen">
+  <a href="index.html" class="home-btn" title="Volver al inicio">
+    <img src="casa.png" alt="Inicio">
+  </a>
+
+  <div class="content-box">
+    <h2>¡Juego de Memoria!</h2>
+    <p class="highlight">Hay 24 cartas (12 pares). Encuentra todas las parejas.</p>
+    <p class="highlight">Tienes 3 minutos. Cada intento resta 1 punto. Límite de intentos: 30.</p>
+    <p class="label">Ingresa tu nombre para comenzar:</p>
+    <input type="text" id="playerName" placeholder="Sara López" />
+    <br>
+    <button onclick="startGame()">Comenzar</button>
+  </div>
+</div>
+
+<div id="game">
+  <div class="row">
+    <h3 id="player" style="margin:0;">Jugador:</h3>
+    <h3 id="pairs"  style="margin:0; color:#401268;">Pares: 0 / 12</h3>
+  </div>
+  <div class="row">
+    <h3 id="timer" class="metric">Tiempo restante: 3:00</h3>
+    <h3 class="metric" style="margin:0;">
+      Intentos: <span id="attempts">0</span> / <span id="attempts-max">30</span> &nbsp;|&nbsp; Puntos: <span id="score">24</span>
+    </h3>
+  </div>
+
+  <div id="board" class="board"></div>
+</div>
+
+<script>
+  /* ===== Config ===== */
+  const TOTAL_PAIRS = 12;           // 24 cartas
+  const START_SCORE = 24;           // puntos iniciales
+  const MAX_ATTEMPTS = 30;          // límite de intentos (decidido)
+  let time = 180;                   // 3 minutos
+
+  /* ===== Estado ===== */
+  let timerInterval;
+  let score = START_SCORE;
+  let attempts = 0;
+  let pairsFound = 0;
+  let lock = false;                 // para no voltear más de 2
+  let firstCard = null, secondCard = null;
+  let gameOver = false;
+
+  // Símbolos para 12 pares (puedes cambiarlos por imágenes si quieres)
+  const symbols = ["🍎","⭐","🔔","🎲","🧩","🪄","🎈","⚽","🎵","🌙","🍪","🎁"];
+
+  function startGame(){
+    const name = document.getElementById('playerName').value.trim();
+    if(!name){ alert("Por favor ingresa tu nombre."); return; }
+
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('game').style.display = 'block';
+    document.getElementById('player').textContent = "Jugador: " + name;
+
+    score = START_SCORE; attempts = 0; pairsFound = 0; gameOver = false;
+    document.getElementById('attempts-max').textContent = MAX_ATTEMPTS;
+    updateHUD();
+
+    buildBoard();
+    startTimer();
+  }
+
+  function buildBoard(){
+    const board = document.getElementById('board');
+    board.innerHTML = "";
+
+    // Crea el mazo de 24 (12 pares duplicados)
+    const cardsData = shuffle([...symbols.slice(0, TOTAL_PAIRS), ...symbols.slice(0, TOTAL_PAIRS)]);
+    cardsData.forEach((sym, idx) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.symbol = sym;
+      card.dataset.index = idx;
+
+      const inner = document.createElement('div');
+      inner.className = 'card-inner';
+
+      const back = document.createElement('div');
+      back.className = 'face back';
+      back.innerHTML = '<span class="symbol">?</span>';
+
+      const front = document.createElement('div');
+      front.className = 'face front';
+      front.innerHTML = `<span class="symbol">${sym}</span>`;
+
+      inner.appendChild(back);
+      inner.appendChild(front);
+      card.appendChild(inner);
+
+      card.addEventListener('click', () => onCardClick(card));
+      board.appendChild(card);
+    });
+  }
+
+  function onCardClick(card){
+    if (gameOver || lock) return;
+    if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+    card.classList.add('flipped');
+
+    if (!firstCard){
+      firstCard = card;
+      return;
+    }
+
+    // segundo click válido
+    secondCard = card;
+    lock = true;
+
+    // contamos intento y restamos punto
+    attempts++;
+    score = Math.max(0, score - 1); // nunca negativo
+    updateHUD();
+
+    if (firstCard.dataset.symbol === secondCard.dataset.symbol){
+      // match
+      setTimeout(() => {
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+        pairsFound++;
+        resetTurn();
+
+        updateHUD();
+        if (pairsFound === TOTAL_PAIRS) endGame('win');
+      }, 250);
+    } else {
+      // fallo -> sonido
+      const err = document.getElementById("sfx-error");
+      if (err){ err.currentTime = 0; err.play().catch(()=>{}); }
+
+      setTimeout(() => {
+        firstCard.classList.remove('flipped');
+        secondCard.classList.remove('flipped');
+        resetTurn();
+
+        // ¿límite de intentos?
+        if (attempts >= MAX_ATTEMPTS) endGame('attempts');
+      }, 700);
+    }
+  }
+
+  function resetTurn(){
+    [firstCard, secondCard] = [null, null];
+    lock = false;
+  }
+
+  function startTimer(){
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (gameOver) return;
+      time--;
+      document.getElementById('timer').textContent = "Tiempo restante: " + formatTime(time);
+      if (time <= 0) endGame('timeout');
+    }, 1000);
+  }
+
+  function updateHUD(){
+    document.getElementById('pairs').textContent = `Pares: ${pairsFound} / ${TOTAL_PAIRS}`;
+    document.getElementById('attempts').textContent = attempts;
+    document.getElementById('score').textContent = score;
+    document.getElementById('timer').textContent = "Tiempo restante: " + formatTime(time);
+  }
+
+  function formatTime(s){
+    const m = Math.floor(s/60), sec = s % 60;
+    return m + ":" + (sec < 10 ? "0"+sec : sec);
+  }
+
+  function endGame(reason){
+    if (gameOver) return;
+    gameOver = true;
+    clearInterval(timerInterval);
+
+    const name = document.getElementById('playerName').value || "";
+    let msg = "";
+    if (reason === 'win'){
+      msg = `¡Felicidades! Completaste los ${TOTAL_PAIRS} pares. Intentos: ${attempts}. Puntos: ${score}.`;
+    } else if (reason === 'attempts'){
+      msg = `¡Límite de intentos alcanzado! Pares: ${pairsFound}/${TOTAL_PAIRS}. Intentos: ${attempts}. Puntos: ${score}.`;
+    } else if (reason === 'timeout'){
+      msg = `¡Tiempo agotado! Pares: ${pairsFound}/${TOTAL_PAIRS}. Intentos: ${attempts}. Puntos: ${score}.`;
+    } else {
+      msg = `Fin del juego. Pares: ${pairsFound}/${TOTAL_PAIRS}. Intentos: ${attempts}. Puntos: ${score}.`;
+    }
+    alert(msg);
+
+    // Guardar resultado
+    enviarPuntaje(name, score, "Memoria", "Memoria (24 cartas)");
+
+    setTimeout(() => location.reload(), 600);
+  }
+
+  function shuffle(arr){
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+</script>
+
+<script>
+  /* Envío a tu Apps Script (mismo endpoint) */
+  const scriptURL = "https://script.google.com/macros/s/AKfycbzPsd51L1YDmXKGNAh-bTHsla5K8o3XR-Q24zawWIEMQsjS8acR9gg5GfSOqY7on9Rj/exec";
+
+  function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
+    const formData = new FormData();
+    formData.append("nombre", nombre);
+    formData.append("puntaje", puntaje);
+    formData.append("juego", juegoPrincipal);
+    formData.append("titulo", tituloDelJuego);
+    const fechaHora = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
+    formData.append("fecha", fechaHora);
+
+    fetch(scriptURL, { method: "POST", body: formData })
+      .then(() => console.log("✅ Puntaje enviado"))
+      .catch(err => console.error("❌ Error al enviar puntaje:", err));
+  }
+</script>
+
+<!-- Sonido SOLO para fallos -->
+<audio id="sfx-error" src="error.mp3" preload="auto"></audio>
+
+</body>
+</html>
