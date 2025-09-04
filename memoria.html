@@ -145,7 +145,7 @@
   <div class="content-box">
     <h2>¡Juego de Memoria!</h2>
     <p class="highlight">Hay 24 cartas (12 pares). Encuentra todas las parejas.</p>
-    <p class="highlight">Tienes 3 minutos. Cada intento resta 1 punto. Límite de intentos: 30.</p>
+    <p class="highlight">Tienes 3 minutos. <b>Cada par correcto suma 2 puntos</b> y <b>cada fallo resta 1</b>. Límite de intentos: 30.</p>
     <p class="label">Ingresa tu nombre para comenzar:</p>
     <input type="text" id="playerName" placeholder="Sara López" />
     <br>
@@ -171,7 +171,7 @@
 <script>
   /* ===== Config ===== */
   const TOTAL_PAIRS = 12;           // 24 cartas
-  const START_SCORE = 24;           // puntos iniciales
+  const START_SCORE = 0;           // puntos iniciales
   const MAX_ATTEMPTS = 30;          // límite de intentos (decidido)
   let time = 180;                   // 3 minutos
 
@@ -236,50 +236,53 @@
   }
 
   function onCardClick(card){
-    if (gameOver || lock) return;
-    if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+  if (gameOver || lock) return;
+  if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
 
-    card.classList.add('flipped');
+  card.classList.add('flipped');
 
-    if (!firstCard){
-      firstCard = card;
-      return;
-    }
+  // Primer click válido
+  if (!firstCard){
+    firstCard = card;
+    return;
+  }
 
-    // segundo click válido
-    secondCard = card;
-    lock = true;
+  // Segundo click válido
+  secondCard = card;
+  lock = true;
+  attempts++;
+  updateHUD();
 
-    // contamos intento y restamos punto
-    attempts++;
-    score = Math.max(0, score - 1); // nunca negativo
-    updateHUD();
+  // ¿Coinciden?
+  if (firstCard.dataset.symbol === secondCard.dataset.symbol){
+    // ✅ acierto: +2 puntos y se quedan descubiertas
+    setTimeout(() => {
+      firstCard.classList.add('matched');
+      secondCard.classList.add('matched');
 
-    if (firstCard.dataset.symbol === secondCard.dataset.symbol){
-      // match
-      setTimeout(() => {
-        firstCard.classList.add('matched');
-        secondCard.classList.add('matched');
-        pairsFound++;
-        resetTurn();
+      score += 2;
+      pairsFound++;
+      resetTurn();
 
-        updateHUD();
-        if (pairsFound === TOTAL_PAIRS) endGame('win');
-      }, 250);
-    } else {
-      // fallo -> sonido
-      const err = document.getElementById("sfx-error");
-      if (err){ err.currentTime = 0; err.play().catch(()=>{}); }
+      updateHUD();
+      if (pairsFound === TOTAL_PAIRS) endGame('win');
+    }, 250);
+  } else {
+    // ❌ fallo: sonido y −1 punto (sin bajar de 0)
+    const err = document.getElementById("sfx-error");
+    if (err){ err.currentTime = 0; err.play().catch(()=>{}); }
 
-      setTimeout(() => {
-        firstCard.classList.remove('flipped');
-        secondCard.classList.remove('flipped');
-        resetTurn();
+    setTimeout(() => {
+      firstCard.classList.remove('flipped');
+      secondCard.classList.remove('flipped');
 
-        // ¿límite de intentos?
-        if (attempts >= MAX_ATTEMPTS) endGame('attempts');
-      }, 700);
-    }
+      score = Math.max(0, score - 1);
+      resetTurn();
+
+      if (attempts >= MAX_ATTEMPTS) endGame('attempts');
+      updateHUD();
+    }, 700);
+  }
   }
 
   function resetTurn(){
