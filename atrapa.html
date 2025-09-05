@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Atrapa el Objeto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      height: 100%; width: 100%;
+      font-family: 'Quicksand', sans-serif;
+      background-color: #f4f0fa;
+      background-image: url('fondo.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    /* Pantalla inicial */
+    #start-screen {
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh;
+    }
+    .content-box {
+      background-color: rgba(64, 18, 104, 0.15);
+      backdrop-filter: blur(4px);
+      border-radius: 20px;
+      padding: 40px 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 520px;
+      text-align: center;
+      animation: fadeInUp 1.5s ease forwards;
+    }
+    .content-box h2 { font-size: 28px; color: #401268; margin-bottom: 20px; }
+    .content-box p.highlight { color:#111; font-weight: normal; }
+    .content-box p.label { margin-bottom: 5px; color: #401268; }
+    .content-box input {
+      padding: 10px; width: 80%; max-width: 320px; margin-top: 12px;
+      border-radius: 8px; border: 1px solid #ccc;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .content-box button {
+      margin-top: 16px; padding: 10px 20px;
+      background-color: #483D8B; color: white; border: none;
+      border-radius: 8px; cursor: pointer; font-size: 16px;
+    }
+    .content-box button:hover { background-color: #5E35B1; }
+
+    /* Juego */
+    #game { display: none; height: 100vh; overflow-y: auto; padding: 20px; box-sizing: border-box; }
+    .row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 5px; margin-bottom: 6px;
+    }
+    .metric { font-size: 28px; font-weight: 600; color: #401268; margin: 0; }
+
+    #game-container {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      aspect-ratio: 16/9;       /* área de juego responsiva */
+      background: rgba(255,255,255,0.4);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    /* Caja del jugador */
+    #catcher {
+      position: absolute;
+      bottom: 16px;
+      width: 140px; height: 40px;
+      left: calc(50% - 70px);
+      background: #8757b0;            /* morado relleno */
+      border: 6px solid #532983;      /* contorno grueso */
+      border-radius: 10px;
+      box-shadow: 0 6px 0 #7849a3 inset;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; letter-spacing: .5px;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+      user-select: none;
+    }
+
+    /* Objetos que caen */
+    .drop {
+      position: absolute;
+      top: -60px;
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      color: #fff;
+      border: 4px solid #532983;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      user-select: none;
+    }
+    .good {
+      background: #fed13f;             /* amarillo principal */
+      box-shadow: 0 6px 0 #f1a830 inset;
+      color: #532983;
+    }
+    .bad {
+      background: #8757b0;             /* morado relleno */
+      box-shadow: 0 6px 0 #7849a3 inset;
+    }
+
+    /* Acierto (brillo) */
+    .catch-glow {
+      outline: 6px solid rgba(135,87,176,0.55);
+      outline-offset: 0;
+      animation: glow 350ms ease-out;
+    }
+    @keyframes glow {
+      from { outline-color: rgba(135,87,176,0.85); }
+      to   { outline-color: rgba(135,87,176,0.0); }
+    }
+
+    /* Casita (solo en pantalla inicial) */
+    .home-btn {
+      position: fixed; top: 20px; left: 20px; z-index: 1000;
+      background-color: rgba(64, 18, 104, 0.15);
+      border: none; cursor: pointer; transition: transform .2s ease;
+      border-radius: 50%; backdrop-filter: blur(4px);
+      padding: 20px; box-shadow: 0 0px 12px rgba(0,0,0,0.2);
+    }
+    .home-btn img {
+      width: 100px; height: auto; display: block;
+      animation: glowPulse 2s infinite ease-in-out;
+    }
+    .home-btn:hover { transform: scale(1.1); box-shadow: 0 0px 16px rgba(64,18,104,0.3); }
+    @keyframes glowPulse {
+      0% { filter: drop-shadow(0 0 5px rgba(64,18,104,0.3)); }
+      50% { filter: drop-shadow(0 0 12px rgba(64,18,104,0.6)); }
+      100% { filter: drop-shadow(0 0 5px rgba(64,18,104,0.3)); }
+    }
+
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+
+    @media (max-width: 480px){
+      .home-btn { padding: 14px; }
+      .home-btn img { width: 72px; }
+      #catcher { width: 120px; left: calc(50% - 60px); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Solo en inicio -->
+<div id="start-screen">
+  <a href="index.html" class="home-btn" title="Volver al inicio">
+    <img src="casa.png" alt="Inicio">
+  </a>
+
+  <div class="content-box">
+    <h2>¡Atrapa el objeto!</h2>
+    <p class="highlight">Mueve la caja con ← → y atrapa los objetos dorados.</p>
+    <p class="highlight">Los objetos morados restan puntos (¡son pocos!).</p>
+    <p class="highlight">Tienes 1 minuto y 30 segundos. ¡Suerte!</p>
+
+    <p class="label">Ingresa tu nombre:</p>
+    <input type="text" id="playerName" placeholder="Sara López">
+
+    <p class="label" style="margin-top:12px;">Código de acceso:</p>
+    <input type="password" id="accessCode" placeholder="Código de ganadores">
+
+    <br>
+    <button onclick="startGame()">Comenzar</button>
+  </div>
+</div>
+
+<!-- Juego -->
+<div id="game">
+  <div class="row">
+    <h3 id="player" style="margin:0;">Jugador:</h3>
+    <h3 id="score" style="margin:0; color:#401268;">Puntos: 0</h3>
+  </div>
+  <div class="row">
+    <h3 id="timer" class="metric">Tiempo restante: 1:30</h3>
+    <h3 id="badCounter" class="metric">Malos atrapados: 0</h3>
+  </div>
+
+  <div id="game-container">
+    <div id="catcher">Connected2me</div>
+  </div>
+</div>
+
+<script>
+  /* ======= Config ======= */
+  const ACCESS_CODE = "GANADORES2025"; // 🔐 Cambia la clave aquí cada mes
+  let TIME_LEFT = 90;                  // 1:30
+  const GOOD_PROB = 0.85;              // 85% buenos
+  const BAD_PROB  = 0.15;              // 15% malos (pocos)
+  const GOOD_SCORE = 1;
+  const BAD_PENALTY = 2;
+
+  /* ======= Estado ======= */
+  let namePlayer = "";
+  let timerInterval = null;
+  let gameOver = false;
+
+  let score = 0;
+  let badCaught = 0;
+
+  const container = () => document.getElementById('game-container');
+  const catcher = () => document.getElementById('catcher');
+
+  let catcherX = 0; // en px relativos al contenedor
+  let catcherSpeed = 9; // px por frame
+  let keyLeft = false, keyRight = false;
+
+  const drops = new Set(); // elementos activos
+
+  function startGame(){
+    const name = document.getElementById('playerName').value.trim();
+    const code = document.getElementById('accessCode').value.trim();
+
+    if (!name){ alert("Por favor ingresa tu nombre."); return; }
+    if (code !== ACCESS_CODE){ alert("Código inválido. Este juego es exclusivo para ganadores."); return; }
+
+    namePlayer = name;
+    document.getElementById('player').textContent = "Jugador: " + namePlayer;
+
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('game').style.display = 'block';
+
+    resetState();
+    initCatcher();
+    startTimer();
+    startSpawns();
+    loop();
+  }
+
+  function resetState(){
+    TIME_LEFT = 90;
+    score = 0;
+    badCaught = 0;
+    gameOver = false;
+    document.getElementById('score').textContent = "Puntos: 0";
+    document.getElementById('badCounter').textContent = "Malos atrapados: 0";
+    document.getElementById('timer').textContent = "Tiempo restante: 1:30";
+    container().querySelectorAll('.drop').forEach(n => n.remove());
+    drops.clear();
+  }
+
+  function initCatcher(){
+    const cont = container();
+    const cat = catcher();
+    // posición inicial al centro
+    catcherX = (cont.clientWidth - cat.clientWidth) / 2;
+    cat.style.left = catcherX + "px";
+  }
+
+  /* ======= Spawns ======= */
+  let spawnInterval = null;
+  function startSpawns(){
+    // ritmo de aparición proporcional al tamaño (cada 700 ms aprox)
+    spawnInterval = setInterval(() => {
+      if (gameOver) return;
+      spawnDrop();
+    }, 700);
+  }
+
+  function spawnDrop(){
+    const cont = container();
+    const d = document.createElement('div');
+
+    // tipo
+    const isGood = Math.random() < GOOD_PROB;
+    d.className = "drop " + (isGood ? "good" : "bad");
+    d.dataset.type = isGood ? "good" : "bad";
+
+    // posición X aleatoria
+    const maxX = cont.clientWidth - 48 - 8; // ancho - drop - borde
+    const x = Math.max(8, Math.random() * maxX);
+
+    d.style.left = x + "px";
+    d.style.top = "-60px";
+
+    // velocidad vertical aleatoria (según alto)
+    const vy = cont.clientHeight / 160 + Math.random() * (cont.clientHeight / 140);
+    d.dataset.vy = vy;
+
+    // contenido (emoji simple)
+    d.textContent = isGood ? "★" : "✖";
+
+    cont.appendChild(d);
+    drops.add(d);
+  }
+
+  /* ======= Loop ======= */
+  function loop(){
+    if (gameOver) return;
+
+    // mover catcher por teclado
+    const cont = container();
+    const cat = catcher();
+    const maxX = cont.clientWidth - cat.clientWidth;
+
+    if (keyLeft)  catcherX -= catcherSpeed;
+    if (keyRight) catcherX += catcherSpeed;
+    if (catcherX < 0) catcherX = 0;
+    if (catcherX > maxX) catcherX = maxX;
+    cat.style.left = catcherX + "px";
+
+    // actualizar drops
+    const catRect = cat.getBoundingClientRect();
+    const contRect = cont.getBoundingClientRect();
+
+    drops.forEach(d => {
+      let y = d.offsetTop + parseFloat(d.dataset.vy);
+      d.style.top = y + "px";
+
+      const dRect = d.getBoundingClientRect();
+
+      // colisión simple (intersección con catcher)
+      if (rectsIntersect(dRect, catRect)){
+        if (d.dataset.type === "good"){
+          score += GOOD_SCORE;
+          flashCatcher();
+        } else {
+          // sonido y penalización
+          const err = document.getElementById("sfx-error");
+          if (err){ err.currentTime = 0; err.play().catch(()=>{}); }
+          score = Math.max(0, score - BAD_PENALTY);
+          badCaught++;
+          document.getElementById('badCounter').textContent = "Malos atrapados: " + badCaught;
+        }
+        document.getElementById('score').textContent = "Puntos: " + score;
+        drops.delete(d);
+        d.remove();
+        return;
+      }
+
+      // si salió del contenedor, eliminar
+      if (dRect.top - contRect.top > cont.clientHeight){
+        drops.delete(d);
+        d.remove();
+      }
+    });
+
+    requestAnimationFrame(loop);
+  }
+
+  function rectsIntersect(a, b){
+    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+  }
+
+  function flashCatcher(){
+    const cat = catcher();
+    cat.classList.add('catch-glow');
+    setTimeout(() => cat.classList.remove('catch-glow'), 220);
+  }
+
+  /* ======= Timer y fin ======= */
+  function startTimer(){
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      TIME_LEFT--;
+      document.getElementById('timer').textContent = "Tiempo restante: " + formatTime(TIME_LEFT);
+      if (TIME_LEFT <= 0){
+        endGame('timeout');
+      }
+    }, 1000);
+  }
+
+  function endGame(reason){
+    if (gameOver) return;
+    gameOver = true;
+
+    clearInterval(timerInterval);
+    clearInterval(spawnInterval);
+
+    let msg = "";
+    if (reason === 'timeout'){
+      msg = `¡Tiempo! Puntuación final: ${score}.`;
+    } else {
+      msg = `Fin del juego. Puntuación: ${score}.`;
+    }
+    alert(msg);
+
+    enviarPuntaje(namePlayer, score, "Atrapa", "Atrapa el objeto");
+    setTimeout(() => location.reload(), 500);
+  }
+
+  function formatTime(s){
+    const m = Math.floor(s/60), sec = s % 60;
+    return m + ":" + (sec < 10 ? "0"+sec : sec);
+  }
+
+  /* ======= Input ======= */
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft')  keyLeft = true;
+    if (e.key === 'ArrowRight') keyRight = true;
+  });
+  window.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft')  keyLeft = false;
+    if (e.key === 'ArrowRight') keyRight = false;
+  });
+</script>
+
+<script>
+  /* ======= Envío a tu Google Sheet ======= */
+  const scriptURL = "https://script.google.com/macros/s/AKfycbzPsd51L1YDmXKGNAh-bTHsla5K8o3XR-Q24zawWIEMQsjS8acR9gg5GfSOqY7on9Rj/exec";
+  function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
+    const formData = new FormData();
+    formData.append("nombre", nombre);
+    formData.append("puntaje", puntaje);
+    formData.append("juego", juegoPrincipal);
+    formData.append("titulo", tituloDelJuego);
+    const fechaHora = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
+    formData.append("fecha", fechaHora);
+
+    fetch(scriptURL, { method: "POST", body: formData })
+      .then(() => console.log("✅ Puntaje enviado"))
+      .catch(err => console.error("❌ Error al enviar puntaje:", err));
+  }
+</script>
+
+<!-- Sonido para objetos malos -->
+<audio id="sfx-error" src="error.mp3" preload="auto"></audio>
+
+</body>
+</html>
