@@ -67,14 +67,14 @@
       box-shadow: 0 6px 16px rgba(0,0,0,0.15);
     }
 
-    /* Caja del jugador */
+    /* Caja del jugador (más angosta) */
     #catcher {
       position: absolute;
       bottom: 16px;
-      width: 140px; height: 40px;
-      left: calc(50% - 70px);
-      background: #8757b0;            /* morado relleno */
-      border: 6px solid #532983;      /* contorno grueso */
+      width: 110px; height: 40px;   /* ← antes 140px */
+      left: calc(50% - 55px);
+      background: #8757b0;
+      border: 6px solid #532983;
       border-radius: 10px;
       box-shadow: 0 6px 0 #7849a3 inset;
       display: flex; align-items: center; justify-content: center;
@@ -97,12 +97,12 @@
       user-select: none;
     }
     .good {
-      background: #fed13f;             /* amarillo principal */
+      background: #fed13f;       /* amarillo principal */
       box-shadow: 0 6px 0 #f1a830 inset;
       color: #532983;
     }
     .bad {
-      background: #8757b0;             /* morado relleno */
+      background: #8757b0;       /* morado relleno */
       box-shadow: 0 6px 0 #7849a3 inset;
     }
 
@@ -141,7 +141,7 @@
     @media (max-width: 480px){
       .home-btn { padding: 14px; }
       .home-btn img { width: 72px; }
-      #catcher { width: 120px; left: calc(50% - 60px); }
+      #catcher { width: 100px; left: calc(50% - 50px); } /* también más angosta en móvil */
     }
   </style>
 </head>
@@ -157,7 +157,7 @@
     <h2>¡Atrapa el objeto!</h2>
     <p class="highlight">Mueve la caja con ← → y atrapa los objetos dorados.</p>
     <p class="highlight">Los objetos morados restan 2 puntos (¡son pocos!).</p>
-    <p class="highlight">Tienes 1 minuto y 30 segundos. ¡Suerte!</p>
+    <p class="highlight">Tienes <b>1 minuto</b>. ¡Suerte!</p>
 
     <p class="label">Ingresa tu nombre:</p>
     <input type="text" id="playerName" placeholder="Sara López">
@@ -177,7 +177,7 @@
     <h3 id="score" style="margin:0; color:#401268;">Puntos: 0</h3>
   </div>
   <div class="row">
-    <h3 id="timer" class="metric">Tiempo restante: 1:30</h3>
+    <h3 id="timer" class="metric">Tiempo restante: 1:00</h3>
     <h3 id="badCounter" class="metric">Malos atrapados: 0</h3>
   </div>
 
@@ -188,8 +188,8 @@
 
 <script>
   /* ======= Config ======= */
-  const ACCESS_CODE = "calidadoct25"; // 🔐 Cambia la clave aquí cada mes
-  let TIME_LEFT = 90;                  // 1:30
+  const ACCESS_CODE = "calidadoct25"; // 🔐 Cambia la clave cada mes
+  let TIME_LEFT = 60;                  // ⏱️ 1:00
   const GOOD_PROB = 0.85;              // 85% buenos
   const BAD_PROB  = 0.15;              // 15% malos (pocos)
   const GOOD_SCORE = 1;
@@ -204,13 +204,13 @@
   let badCaught = 0;
 
   const container = () => document.getElementById('game-container');
-  const catcher = () => document.getElementById('catcher');
+  const catcher  = () => document.getElementById('catcher');
 
-  let catcherX = 0; // en px relativos al contenedor
-  let catcherSpeed = 9; // px por frame
+  let catcherX = 0; 
+  let catcherSpeed = 9; 
   let keyLeft = false, keyRight = false;
 
-  const drops = new Set(); // elementos activos
+  const drops = new Set();
 
   function startGame(){
     const name = document.getElementById('playerName').value.trim();
@@ -233,13 +233,13 @@
   }
 
   function resetState(){
-    TIME_LEFT = 90;
+    TIME_LEFT = 60;  // ⏱️
     score = 0;
     badCaught = 0;
     gameOver = false;
     document.getElementById('score').textContent = "Puntos: 0";
     document.getElementById('badCounter').textContent = "Malos atrapados: 0";
-    document.getElementById('timer').textContent = "Tiempo restante: 1:30";
+    document.getElementById('timer').textContent = "Tiempo restante: 1:00";
     container().querySelectorAll('.drop').forEach(n => n.remove());
     drops.clear();
   }
@@ -247,42 +247,42 @@
   function initCatcher(){
     const cont = container();
     const cat = catcher();
-    // posición inicial al centro
     catcherX = (cont.clientWidth - cat.clientWidth) / 2;
     cat.style.left = catcherX + "px";
   }
 
-  /* ======= Spawns ======= */
+  /* ======= Spawns (menos objetos) ======= */
   let spawnInterval = null;
+  const MAX_CONCURRENT_DROPS = 4;     // límite simultáneo
+
   function startSpawns(){
-    // ritmo de aparición proporcional al tamaño (cada 700 ms aprox)
+    // más espaciados: ~1.2s y además con "saltos" aleatorios
     spawnInterval = setInterval(() => {
       if (gameOver) return;
+      if (drops.size >= MAX_CONCURRENT_DROPS) return;   // no saturar
+      if (Math.random() < 0.30) return;                 // 30% de veces no aparece nada
       spawnDrop();
-    }, 700);
+    }, 1200);
   }
 
   function spawnDrop(){
     const cont = container();
     const d = document.createElement('div');
 
-    // tipo
     const isGood = Math.random() < GOOD_PROB;
     d.className = "drop " + (isGood ? "good" : "bad");
     d.dataset.type = isGood ? "good" : "bad";
 
-    // posición X aleatoria
-    const maxX = cont.clientWidth - 48 - 8; // ancho - drop - borde
+    const maxX = cont.clientWidth - 48 - 8;
     const x = Math.max(8, Math.random() * maxX);
 
     d.style.left = x + "px";
     d.style.top = "-60px";
 
-    // velocidad vertical aleatoria (según alto)
+    // velocidad vertical
     const vy = cont.clientHeight / 160 + Math.random() * (cont.clientHeight / 140);
     d.dataset.vy = vy;
 
-    // contenido (emoji simple)
     d.textContent = isGood ? "★" : "✖";
 
     cont.appendChild(d);
@@ -293,9 +293,8 @@
   function loop(){
     if (gameOver) return;
 
-    // mover catcher por teclado
     const cont = container();
-    const cat = catcher();
+    const cat  = catcher();
     const maxX = cont.clientWidth - cat.clientWidth;
 
     if (keyLeft)  catcherX -= catcherSpeed;
@@ -304,7 +303,6 @@
     if (catcherX > maxX) catcherX = maxX;
     cat.style.left = catcherX + "px";
 
-    // actualizar drops
     const catRect = cat.getBoundingClientRect();
     const contRect = cont.getBoundingClientRect();
 
@@ -314,13 +312,11 @@
 
       const dRect = d.getBoundingClientRect();
 
-      // colisión simple (intersección con catcher)
       if (rectsIntersect(dRect, catRect)){
         if (d.dataset.type === "good"){
           score += GOOD_SCORE;
           flashCatcher();
         } else {
-          // sonido y penalización
           const err = document.getElementById("sfx-error");
           if (err){ err.currentTime = 0; err.play().catch(()=>{}); }
           score = Math.max(0, score - BAD_PENALTY);
@@ -333,7 +329,6 @@
         return;
       }
 
-      // si salió del contenedor, eliminar
       if (dRect.top - contRect.top > cont.clientHeight){
         drops.delete(d);
         d.remove();
@@ -372,12 +367,10 @@
     clearInterval(timerInterval);
     clearInterval(spawnInterval);
 
-    let msg = "";
-    if (reason === 'timeout'){
-      msg = `¡Tiempo! Puntuación final: ${score}.`;
-    } else {
-      msg = `Fin del juego. Puntuación: ${score}.`;
-    }
+    let msg = (reason === 'timeout')
+      ? `¡Tiempo! Puntuación final: ${score}.`
+      : `Fin del juego. Puntuación: ${score}.`;
+
     alert(msg);
 
     enviarPuntaje(namePlayer, score, "Atrapa", "Atrapa el objeto");
