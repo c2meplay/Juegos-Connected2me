@@ -233,13 +233,13 @@
   }
 
   function resetState(){
-    TIME_LEFT = 30;  // ⏱️
+    TIME_LEFT = 20;  // ⏱️
     score = 0;
     badCaught = 0;
     gameOver = false;
     document.getElementById('score').textContent = "Puntos: 0";
     document.getElementById('badCounter').textContent = "Malos atrapados: 0";
-    document.getElementById('timer').textContent = "Tiempo restante: 1:00";
+    document.getElementById('timer').textContent = "Tiempo restante: 0:20";
     container().querySelectorAll('.drop').forEach(n => n.remove());
     drops.clear();
   }
