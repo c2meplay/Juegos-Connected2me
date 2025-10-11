@@ -157,7 +157,7 @@
     <h2>¡Atrapa el objeto!</h2>
     <p class="highlight">Mueve la caja con ← → y atrapa los objetos dorados.</p>
     <p class="highlight">Los objetos morados restan 2 puntos (¡son pocos!).</p>
-    <p class="highlight">Tienes 30 segundos. ¡Suerte!</p>
+    <p class="highlight">Tienes 20 segundos. ¡Suerte!</p>
 
     <p class="label">Ingresa tu nombre:</p>
     <input type="text" id="playerName" placeholder="Sara López">
@@ -177,7 +177,7 @@
     <h3 id="score" style="margin:0; color:#401268;">Puntos: 0</h3>
   </div>
   <div class="row">
-    <h3 id="timer" class="metric">Tiempo restante: 0:30</h3>
+    <h3 id="timer" class="metric">Tiempo restante: 0:20</h3>
     <h3 id="badCounter" class="metric">Malos atrapados: 0</h3>
   </div>
 
@@ -189,7 +189,7 @@
 <script>
   /* ======= Config ======= */
   const ACCESS_CODE = "calidadoct25"; // 🔐 Cambia la clave cada mes
-  let TIME_LEFT = 30;                  // ⏱️ 0:30
+  let TIME_LEFT = 20;                  // ⏱️ 0:20
   const GOOD_PROB = 0.85;              // 85% buenos
   const BAD_PROB  = 0.15;              // 15% malos (pocos)
   const GOOD_SCORE = 1;
