@@ -349,7 +349,10 @@
   /* Envío a tu Apps Script (mismo endpoint) */
   const scriptURL = "https://script.google.com/macros/s/AKfycbzPsd51L1YDmXKGNAh-bTHsla5K8o3XR-Q24zawWIEMQsjS8acR9gg5GfSOqY7on9Rj/exec";
 
-  function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
+  async function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
+
+    // ⏳ Espera para asegurar que la Web App ya despertó
+    await new Promise(r => setTimeout(r, 1200));
     const formData = new FormData();
     formData.append("nombre", nombre);
     formData.append("puntaje", puntaje);
@@ -358,7 +361,11 @@
     const fechaHora = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
     formData.append("fecha", fechaHora);
 
-    fetch(scriptURL, { method: "POST", body: formData })
+    fetch(scriptURL, {
+  method: "POST",
+  body: formData,
+  mode: "no-cors"
+})
       .then(() => console.log("✅ Puntaje enviado"))
       .catch(err => console.error("❌ Error al enviar puntaje:", err));
   }
