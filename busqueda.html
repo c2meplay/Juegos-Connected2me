@@ -325,7 +325,10 @@
 <script>
   const scriptURL = "https://script.google.com/macros/library/d/1PdMrjOowgqR3EL4pH_F8veqag2UCnXdu8GWdk0Ew_MSCEsuFsjZu8frV/1";
 
-  function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
+  async function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
+
+    // ⏳ Espera para asegurar que la Web App ya despertó
+    await new Promise(r => setTimeout(r, 1200));
     const formData = new FormData();
     formData.append("nombre", nombre);
     formData.append("puntaje", puntaje);
