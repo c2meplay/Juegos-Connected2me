@@ -408,7 +408,11 @@
     const fechaHora = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
     formData.append("fecha", fechaHora);
 
-    fetch(scriptURL, { method: "POST", body: formData })
+    fetch(scriptURL, {
+  method: "POST",
+  body: formData,
+  mode: "no-cors"
+})
       .then(() => console.log("✅ Puntaje enviado"))
       .catch(err => console.error("❌ Error al enviar puntaje:", err));
   }
