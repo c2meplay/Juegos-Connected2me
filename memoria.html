@@ -312,7 +312,7 @@
     return m + ":" + (sec < 10 ? "0"+sec : sec);
   }
 
-  function endGame(reason){
+  async function endGame(reason){
     if (gameOver) return;
     gameOver = true;
     clearInterval(timerInterval);
@@ -331,9 +331,9 @@
     alert(msg);
 
     // Guardar resultado
-    enviarPuntaje(name, score, "Memoria", "Memoria (24 cartas)");
+    await enviarPuntaje(name, score, "Memoria", "Memoria (24 cartas)");
 
-    setTimeout(() => location.reload(), 600);
+   location.reload();
   }
 
   function shuffle(arr){
@@ -346,13 +346,12 @@
 </script>
 
 <script>
-  /* Envío a tu Apps Script (mismo endpoint) */
-  const scriptURL = "https://script.google.com/macros/s/AKfycbzPsd51L1YDmXKGNAh-bTHsla5K8o3XR-Q24zawWIEMQsjS8acR9gg5GfSOqY7on9Rj/exec";
+  const scriptURL = "https://script.google.com/macros/library/d/1PdMrjOowgqR3EL4pH_F8veqag2UCnXdu8GWdk0Ew_MSCEsuFsjZu8frV/1";
 
   async function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
 
     // ⏳ Espera para asegurar que la Web App ya despertó
-    await new Promise(r => setTimeout(r, 1200));
+    try {
     const formData = new FormData();
     formData.append("nombre", nombre);
     formData.append("puntaje", puntaje);
@@ -361,13 +360,14 @@
     const fechaHora = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
     formData.append("fecha", fechaHora);
 
-    fetch(scriptURL, {
+    await fetch(scriptURL, {
   method: "POST",
   body: formData,
   mode: "no-cors"
-})
-      .then(() => console.log("✅ Puntaje enviado"))
-      .catch(err => console.error("❌ Error al enviar puntaje:", err));
+});
+      console.log("✅ Puntaje enviado");
+    } catch(error) { console.error("❌ Error al enviar puntaje:", error);
+       }
   }
 </script>
 
