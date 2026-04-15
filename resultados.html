@@ -177,38 +177,77 @@
   </table>
 
 <script>
-  const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTmBY7I0MOod7p21vdud8SDZaRxRjdGOItOJrzWNuCFfFPpRzxMB1uwe9iJOn9xOu_8eMvpScEV6WF0/pub?gid=0&single=true&output=csv";
-
+  const url = "https://docs.google.com/spreadsheets/d/1abVwqH6HuTzOi6hI0Sznptqnc_tDr2cOO9BHigdHU2Y/gviz/tq?tqx=out:json&sheet=Hoja%201";
   let datosAgrupados = [];
   let resumenTotal = {};
+
+  function filtrar(filtro, event) {
+    document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    const cuerpo = document.getElementById("tabla-resumen");
+    cuerpo.innerHTML = "";
+
+    const filtrados = datosAgrupados
+      .filter(d => filtro === 'todos' || d.juego === filtro)
+      .sort((a, b) => b.puntaje - a.puntaje);
+
+    filtrados.forEach(d => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${d.jugador}</td>
+        <td>${d.juego}</td>
+        <td>${d.puntaje}</td>
+      `;
+      cuerpo.appendChild(tr);
+    });
+  }
+
+  function renderResumenTotal() {
+    const cuerpo = document.getElementById("tabla-total");
+    cuerpo.innerHTML = "";
+
+    const ordenados = Object.entries(resumenTotal).map(([jugador, puntaje]) => ({ jugador, puntaje }))
+      .sort((a, b) => b.puntaje - a.puntaje);
+
+    ordenados.forEach(d => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${d.jugador}</td>
+        <td>${d.puntaje}</td>
+      `;
+      cuerpo.appendChild(tr);
+    });
+  }
 
   fetch(url)
     .then(res => res.text())
     .then(text => {
-      const filas = text.trim().split("\n").map(f => f.split(","));
+      const json = JSON.parse(text.substr(47).slice(0, -2));
+      const rows = json.table.rows;
 
       const acumulado = {};
       resumenTotal = {};
 
-      // Saltamos encabezados
-      filas.slice(1).forEach(cols => {
-        const jugador = cols[0]?.trim() || "";
-        const puntaje = parseInt(cols[1] || "0");
-        const juego = cols[2]?.trim() || "";
+      rows.forEach(row => {
+        if (!row.c) return;
+        const jugador = row.c[0]?.v || '';
+        const puntaje = parseInt(row.c[1]?.v || '0');
+        const juego = row.c[2]?.v || '';
 
         const clave = `${jugador}_${juego}`;
-
         if (!acumulado[clave]) {
           acumulado[clave] = { jugador, juego, puntaje: 0 };
         }
         acumulado[clave].puntaje += puntaje;
 
-        if (!resumenTotal[jugador]) resumenTotal[jugador] = 0;
+        if (!resumenTotal[jugador]) {
+          resumenTotal[jugador] = 0;
+        }
         resumenTotal[jugador] += puntaje;
       });
 
       datosAgrupados = Object.values(acumulado);
-
       filtrar("todos", { target: document.querySelector('.tabs button.active') });
       renderResumenTotal();
     })
@@ -216,3 +255,5 @@
 </script>
 </body>
 </html>
+
+
