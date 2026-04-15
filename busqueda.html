@@ -293,7 +293,7 @@
     return m + ":" + (sec < 10 ? "0" + sec : sec);
   }
 
-  async function endGame(reason) {
+  function endGame(reason) {
     if (gameOver) return;        // ✅ evita doble ejecución
     gameOver = true;
     clearInterval(timerInterval);
@@ -314,20 +314,18 @@
     alert(msg);
 
     // Registrar puntaje siempre
-    await enviarPuntaje(name, found, "Búsqueda", "Encuentra los 15 fantasmas");
+    enviarPuntaje(name, found, "Búsqueda", "Encuentra los 15 fantasmas");
 
-    location.reload();
-    
+    setTimeout(() => {
+      location.reload();
+    }, 500);
   }
 </script>
 
 <script>
-  const scriptURL = "https://script.google.com/macros/library/d/1PdMrjOowgqR3EL4pH_F8veqag2UCnXdu8GWdk0Ew_MSCEsuFsjZu8frV/1";
+  const scriptURL = "https://script.google.com/macros/s/AKfycbzPsd51L1YDmXKGNAh-bTHsla5K8o3XR-Q24zawWIEMQsjS8acR9gg5GfSOqY7on9Rj/exec";
 
-  async function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
-
-    // ⏳ Espera para asegurar que la Web App ya despertó
-    try {
+  function enviarPuntaje(nombre, puntaje, juegoPrincipal, tituloDelJuego) {
     const formData = new FormData();
     formData.append("nombre", nombre);
     formData.append("puntaje", puntaje);
@@ -336,14 +334,9 @@
     const fechaHora = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
     formData.append("fecha", fechaHora);
 
-    await fetch(scriptURL, {
-  method: "POST",
-  body: formData,
-  mode: "no-cors"
-});
-      console.log("✅ Puntaje enviado");
-    } catch(error) { console.error("❌ Error al enviar puntaje:", error);
-       }
+    fetch(scriptURL, { method: "POST", body: formData })
+      .then(() => console.log("✅ Puntaje enviado"))
+      .catch(error => console.error("❌ Error al enviar puntaje:", error));
   }
 </script>
 
